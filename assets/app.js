@@ -51,5 +51,16 @@ window.YW = (function(){
     if(b&&n){ b.onclick=()=>n.classList.toggle("open"); n.querySelectorAll("a").forEach(a=>a.onclick=()=>n.classList.remove("open")); }
   }
 
-  return {API,MON,CAT_ZH,TINT,ICON,USER_ICON,esc,isTrue,lines,lat,fmtDate,isPast,fetchData,post,settingsMap,applyStaticLang,setupNav};
+  /* language persistence: survives across pages via localStorage, shareable via ?lang=zh-hant */
+  function loadLang(){
+    var u=new URLSearchParams(location.search).get("lang");
+    if(u) return u.toLowerCase().indexOf("zh")===0 ? "zh" : "en";
+    try{ return localStorage.getItem("yw_lang")==="zh" ? "zh" : "en"; }catch(e){ return "en"; }
+  }
+  function saveLang(l){
+    try{ localStorage.setItem("yw_lang", l); }catch(e){}
+    try{ var url=new URL(location.href); url.searchParams.set("lang", l==="zh"?"zh-hant":"en"); history.replaceState(null,"",url); }catch(e){}
+  }
+
+  return {API,MON,CAT_ZH,TINT,ICON,USER_ICON,esc,isTrue,lines,lat,fmtDate,isPast,fetchData,post,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
 })();
