@@ -94,6 +94,16 @@ body{background:var(--mist)}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .hint{color:var(--ink-55);font-size:13px;margin:-14px 0 4px}
+.pickwrap{position:fixed;inset:0;z-index:80;background:rgba(22,19,15,.5);display:none;align-items:center;justify-content:center;padding:24px}
+.pickwrap.open{display:flex}
+.pickbox{background:#fff;border-radius:16px;width:min(740px,95vw);max-height:84vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.pickhd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.pickhd b{font-family:var(--disp);font-size:16px}
+.pickgrid{padding:16px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.pickgrid .pk{aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--mist)}
+.pickgrid .pk img{width:100%;height:100%;object-fit:cover}
+.pickgrid .pk:hover{border-color:var(--vermilion);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.pickempty{padding:34px;text-align:center;color:var(--ink-55);grid-column:1/-1}
 </style>
 </head>
 <body>
@@ -130,6 +140,11 @@ body{background:var(--mist)}
 
 <div class="busy" id="busy"><div class="spin"></div></div>
 <div class="toast" id="toast"></div>
+
+<div class="pickwrap" id="pickwrap"><div class="pickbox">
+  <div class="pickhd"><b>Choose an uploaded image</b><button class="iconbtn" id="pickClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pickgrid" id="pickGrid"></div>
+</div></div>
 
 <script src="assets/app.js"></script>
 <script>
@@ -282,9 +297,8 @@ function renderHero(host){
       </div></div></div>`;
   }).join("") : `<div class="slide on"><div class="ph">${YW.lat()}</div><div class="scrim"></div><div class="inner"><div class="wrap"><h1 style="opacity:.6">No hero slides yet</h1></div></div></div>`;
   const dots = slides.length>1 ? `<div class="dots">${slides.map((s,i)=>`<button data-h="${i}" class="${i===HSEL?'on':''}"></button>`).join("")}</div>`:"";
-  const ed = slides.length ? `<div class="ed" style="position:absolute;inset:0">${tools("hero",HSEL)}</div>`:"";
-  host.innerHTML=`<div class="hero preview" style="border-radius:18px">${inner}${dots}${ed}</div>`;
-  host.querySelectorAll(".dots button").forEach(b=>b.onclick=()=>{HSEL=+b.dataset.h;renderHero(host);});
+  host.innerHTML=`<div class="hero preview ed" data-tab="hero" data-i="${HSEL}" style="border-radius:18px;position:relative">${inner}${slides.length?tools("hero",HSEL):""}${dots}</div>`;
+  host.querySelectorAll(".dots button").forEach(b=>b.onclick=(e)=>{e.stopPropagation();HSEL=+b.dataset.h;renderHero(host);});
 }
 
 function galCard(g,i,big){
@@ -394,6 +408,7 @@ function openDrawer(tab,i){
   $("dTitle").textContent="Edit "+tab.replace(/s$/,"");
   $("dBody").innerHTML=SCHEMA[tab].fields.map(f=>fieldHTML(f,r)).join("");
   $("dBody").querySelectorAll("input[type=file]").forEach(inp=>inp.onchange=()=>onFile(inp));
+  $("dBody").querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>openPicker(b.dataset.pick, b.dataset.pmulti==="1"));
   $("dscrim").classList.add("open"); $("drawer").classList.add("open");
 }
 function closeDrawer(){ $("dscrim").classList.remove("open"); $("drawer").classList.remove("open"); }
@@ -407,8 +422,8 @@ function fieldHTML(f,r){
   if(f.t==="select") return `<div class="fld"><label>${E(f.label)}</label><select id="${id}">${f.opts.map(o=>`<option ${String(r[f.k])===o?'selected':''}>${o}</option>`).join("")}</select></div>`;
   if(f.t==="num") return `<div class="fld"><label>${E(f.label)}</label><input type="number" id="${id}" value="${E(r[f.k])}"></div>`;
   if(f.t==="bool") return `<div class="fld"><label class="chk"><input type="checkbox" id="${id}" ${T(r[f.k])?'checked':''}> ${E(f.label)}</label></div>`;
-  if(f.t==="img"){ const v=E(r[f.k]); return `<div class="fld"><label>${E(f.label)}</label><div class="imgbox"><div class="pv">${v?`<img id="pv_${f.k}" src="${v}">`:`<span>no image</span>`}</div><div class="ic"><input type="text" id="${id}" value="${v}" placeholder="Image URL (or upload →)"><span class="btn btn-ghost btn-sm filebtn">Upload<input type="file" accept="image/*" data-k="${f.k}" data-multi="0"></span></div></div></div>`; }
-  if(f.t==="imgs") return `<div class="fld"><label>${E(f.label)}</label><textarea id="${id}" placeholder="One image URL per line">${E(r[f.k])}</textarea><div style="margin-top:8px"><span class="btn btn-ghost btn-sm filebtn">Upload &amp; add<input type="file" accept="image/*" data-k="${f.k}" data-multi="1"></span></div></div>`;
+  if(f.t==="img"){ const v=E(r[f.k]); return `<div class="fld"><label>${E(f.label)}</label><div class="imgbox"><div class="pv">${v?`<img id="pv_${f.k}" src="${v}">`:`<span>no image</span>`}</div><div class="ic"><input type="text" id="${id}" value="${v}" placeholder="Image URL (or upload / choose)"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload<input type="file" accept="image/*" data-k="${f.k}" data-multi="0"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="0">Choose existing</button></div></div></div></div>`; }
+  if(f.t==="imgs") return `<div class="fld"><label>${E(f.label)}</label><textarea id="${id}" placeholder="One image URL per line">${E(r[f.k])}</textarea><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload &amp; add<input type="file" accept="image/*" data-k="${f.k}" data-multi="1"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="1">Choose existing</button></div></div>`;
   return `<div class="fld"><label>${E(f.label)}</label><input type="text" id="${id}" value="${E(r[f.k])}"></div>`;
 }
 function fileB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});}
@@ -421,8 +436,27 @@ async function onFile(inp){
     if(multi){ const ta=$("f_"+k); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+res.url; }
     else{ $("f_"+k).value=res.url; const box=$("f_"+k).closest(".imgbox").querySelector(".pv"); box.innerHTML=`<img src="${res.url}">`; }
     toast("Image uploaded");
+    IMG_CACHE=null;
   }catch(e){ alert("Upload failed: "+e.message); }
   inp.value=""; busy(false);
+}
+
+/* ---------- image library picker ---------- */
+let PICK={key:null,multi:false}, IMG_CACHE=null;
+async function loadImages(){ if(IMG_CACHE)return IMG_CACHE; const res=await YW.post({action:"images",pass:AUTH.pass}); if(res&&res.ok&&res.images){IMG_CACHE=res.images;return IMG_CACHE;} throw new Error(res&&res.error||"could not list images"); }
+function openPicker(key,multi){
+  PICK={key,multi}; const g=$("pickGrid"); g.innerHTML='<div class="pickempty">Loading…</div>'; $("pickwrap").classList.add("open");
+  loadImages().then(imgs=>{
+    if(!imgs.length){ g.innerHTML='<div class="pickempty">No images uploaded yet. Use “Upload” to add one.</div>'; return; }
+    g.innerHTML=imgs.map(im=>`<div class="pk" data-url="${E(im.url)}" title="${E(im.name)}"><img src="${E(im.url)}" loading="lazy" alt=""></div>`).join("");
+    g.querySelectorAll(".pk").forEach(el=>el.onclick=()=>choosePick(el.dataset.url));
+  }).catch(err=>{ g.innerHTML='<div class="pickempty">Could not load images.<br><small>'+E(String(err.message||err))+'</small></div>'; });
+}
+function choosePick(url){
+  const key=PICK.key;
+  if(PICK.multi){ const ta=$("f_"+key); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+url; }
+  else{ const inp=$("f_"+key); inp.value=url; const box=inp.closest(".imgbox").querySelector(".pv"); if(box)box.innerHTML=`<img src="${url}">`; }
+  $("pickwrap").classList.remove("open");
 }
 function applyDrawer(){
   const r=DATA[EDIT.tab][EDIT.i];
@@ -454,6 +488,8 @@ $("langBtn").onclick=()=>{LANG=LANG==="en"?"zh":"en";renderAll();};
 $("saveBtn").onclick=saveAll;
 $("dClose").onclick=closeDrawer; $("dCancel").onclick=closeDrawer; $("dApply").onclick=applyDrawer;
 $("dscrim").onclick=closeDrawer;
+$("pickClose").onclick=()=>$("pickwrap").classList.remove("open");
+$("pickwrap").onclick=e=>{if(e.target.id==="pickwrap")$("pickwrap").classList.remove("open");};
 window.addEventListener("beforeunload",e=>{ if(DIRTY.size){ e.preventDefault(); e.returnValue=""; } });
 (function(){ const a=sessionStorage.getItem("yw_auth"); if(a){ AUTH=JSON.parse(a); boot(); } })();
 </script>

@@ -1,6 +1,12 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contact · Yuet Wan London</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style id="yw-pre-css">
+#yw-pre{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background-color:#F4ECDD;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='70'%3E%3Cpath d='M20 0 L40 11 L40 35 L20 46 L0 35 L0 11Z M20 46 L40 57 L40 81 M20 46 L0 57 L0 81' fill='none' stroke='%2316130F' stroke-opacity='0.06' stroke-width='1.2'/%3E%3C/svg%3E");transition:opacity .55s ease}
+#yw-pre.hide{opacity:0;pointer-events:none}
+#yw-pre .ring{width:132px;height:132px;border-radius:50%;background:#fff;box-shadow:0 16px 44px rgba(22,19,15,.16);display:grid;place-items:center;overflow:hidden;padding:16px}
+#yw-pre .ring img{width:100%;height:100%;object-fit:contain}
+</style>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
 .phead{padding:calc(var(--nav-h) + 54px) 0 50px;background:var(--ink);color:var(--paper);position:relative;overflow:hidden}
@@ -32,8 +38,16 @@
 .creach .v{font-size:15.5px;font-weight:600;margin-top:2px}.creach .v a:hover{color:var(--vermilion-d)}
 @media(max-width:860px){.clayout{grid-template-columns:1fr}}
 </style></head><body>
+
+<div id="yw-pre"><div class="ring"><img id="yw-pre-gif" alt="Loading"></div></div>
+<script>
+(function(){var g=['img/pre-load-1.gif','img/pre-load-2.gif','img/pre-load-3.gif'];var el=document.getElementById('yw-pre-gif');if(el)el.src=g[Math.floor(Math.random()*g.length)];})();
+window.__pre=function(){var p=document.getElementById('yw-pre');if(!p||p.__h)return;p.__h=1;p.classList.add('hide');setTimeout(function(){p.style.display='none';},650);};
+window.addEventListener('load',function(){setTimeout(window.__pre,450);});
+setTimeout(window.__pre,5000);
+</script>
 <nav class="nav"><div class="wrap">
-<a class="brandlink" href="index.html"><img src="assets/brush_paper.png" alt=""><span><b>Yuet Wan London</b><span class="cjk">倫敦粵韻曲藝文化協會</span></span></a>
+<a class="brandlink" href="index.html"><img src="img/yuetwanlondon-icon.svg" alt="" style="width:38px"><span><b>Yuet Wan London</b><span class="cjk">倫敦粵韻曲藝文化協會</span></span></a>
 <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
 <div class="navlinks" id="navlinks">
 <a href="index.html" data-en="Home" data-zh="主頁">Home</a>
@@ -70,7 +84,6 @@
 <div class="it"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div><div><div class="k" data-en="Location" data-zh="地點">Location</div><div class="v" data-en="London, United Kingdom" data-zh="英國 · 倫敦">London, United Kingdom</div></div></div>
 </aside>
 </div></section>
-<iframe name="gfhidden" style="display:none" title="hidden"></iframe>
 
 <footer class="foot"><div class="wrap">
 <div class="grid2">
@@ -89,40 +102,33 @@
 </div>
 </div>
 <div class="bottom">
-<img src="assets/primary_paper.png" alt="Yuet Wan London">
+<img src="img/yuetwanlondon-main.svg" alt="Yuet Wan London" style="width:150px">
 <div class="cr">© 2026 Yuet Wan London · 倫敦粵韻曲藝文化協會<br><span data-en="The sound of Lingnan, the stage of London" data-zh="粵韻飄香 · 揚聲倫敦">The sound of Lingnan, the stage of London</span></div>
 </div>
 </div></footer>
 <script src="assets/app.js"></script>
 <script>
-let LANG="en";
-function setLang(l){LANG=l;YW.applyStaticLang(l);if(window.render)render();}
+let LANG=YW.loadLang();
+function setLang(l){LANG=l;YW.saveLang(l);YW.applyStaticLang(l);if(window.render)render();}
 document.getElementById("langtog").onclick=function(){setLang(LANG==="en"?"zh":"en");};
+YW.applyStaticLang(LANG);
 YW.setupNav();
-
-/* ===== Google Form wiring ===============================================
-   Form: Contact information
-   To finish: open your form > top-right (3 dots) > "Get pre-filled link",
-   type NAME in Name and MSG in Message, click "Get link", and copy it.
-   The link contains entry.XXXXXXX=NAME and entry.YYYYYYY=MSG.
-   Paste those two entry IDs below. (Email uses the built-in field.)        */
-const GF_ACTION="https://docs.google.com/forms/d/e/1FAIpQLSd4XsVT4r4IQVXHmy1Xp4UjxJ1_Fr2rQdVuxvPhu2htIcfyTQ/formResponse";
-const GF_NAME="entry.REPLACE_NAME";       // <-- Name field ID
-const GF_MESSAGE="entry.REPLACE_MESSAGE"; // <-- Message field ID
-const GF_EMAIL="emailAddress";            // built-in email collection (leave as is)
 
 function submitContact(){
  const name=document.getElementById("f_name"),email=document.getElementById("f_email"),msg=document.getElementById("f_msg");
- if(!name.value.trim()||!email.value.trim()){[name,email].forEach(x=>{if(!x.value.trim())x.style.borderColor="var(--vermilion)";});return;}
- const fd=new FormData();
- fd.append(GF_NAME,name.value); fd.append(GF_MESSAGE,msg.value); fd.append(GF_EMAIL,email.value);
- const body=new URLSearchParams(); for(const[k,v]of fd)body.append(k,v);
- fetch(GF_ACTION,{method:"POST",mode:"no-cors",body}).catch(()=>{});
- document.querySelector(".cform-in").style.display="none";
- document.getElementById("csent").classList.add("show");
+ var bad=false;
+ [name,email].forEach(function(x){ if(!x.value.trim()){x.style.borderColor="var(--vermilion)";bad=true;} });
+ if(email.value && email.value.indexOf("@")<1){email.style.borderColor="var(--vermilion)";bad=true;}
+ if(bad) return;
+ const btn=document.getElementById("csend"); btn.disabled=true;
+ YW.post({action:"contact",name:name.value,email:email.value,message:msg.value}).then(function(res){
+   if(res&&res.ok){ document.querySelector(".cform-in").style.display="none"; document.getElementById("csent").classList.add("show"); }
+   else { btn.disabled=false; alert("Sorry — could not send. Please email yuetwanlondon@gmail.com directly."); }
+ }).catch(function(){ btn.disabled=false; alert("Sorry — could not send. Please email yuetwanlondon@gmail.com directly."); });
 }
 document.getElementById("csend").onclick=submitContact;
-[ "f_name","f_email" ].forEach(id=>document.getElementById(id).addEventListener("input",e=>e.target.style.borderColor=""));
+["f_name","f_email"].forEach(function(id){document.getElementById(id).addEventListener("input",function(e){e.target.style.borderColor="";});});
 document.getElementById("lbb").innerHTML=YW.lat();
+if(window.__pre)window.__pre();
 
 </script></body></html>
