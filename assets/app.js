@@ -3,6 +3,7 @@
    ===================================================================== */
 window.YW = (function(){
   const API = "https://script.google.com/macros/s/AKfycbyUoOwvu32QbKPaLIueyJFFSqft0b7qoASYEImHE3Mj-kRBxphaLbm1yyuXigFfiDKDrw/exec";
+  const DATA_URL = "data.json"; // static snapshot baked by the GitHub Action (Jamstack)
   const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const CAT_ZH = {Performance:"演出",Workshop:"工作坊",Talk:"講座",Music:"音樂"};
   const TINT = {Performance:"#C8402E",Workshop:"#2E7E72",Talk:"#B8893C",Music:"#3E6E84"};
@@ -30,11 +31,35 @@ window.YW = (function(){
     const e=ev.date_end||ev.date_start;
     return e ? new Date(e) < new Date(new Date().toDateString()) : false;
   }
+  /* Public pages: read the STATIC snapshot baked by the build (fast, CDN-served).
+     Falls back to a locally cached copy, then to whatever the page provides. */
   async function fetchData(){
-    const r=await fetch(API,{cache:"no-store"}); return r.json();
+    try{
+      const r = await fetch(DATA_URL, {cache:"no-cache"});
+      if(!r.ok) throw new Error("data.json " + r.status);
+      const j = await r.json();
+      try{ localStorage.setItem("yw_data", JSON.stringify(j)); }catch(e){}
+      return j;
+    }catch(e){
+      try{ const c = localStorage.getItem("yw_data"); if(c) return JSON.parse(c); }catch(_){}
+      throw e;
+    }
+  }
+  /* Editor only: always read LIVE from the Google Sheet so the admin edits current data. */
+  async function fetchLive(){
+    const r = await fetch(API, {cache:"no-store"});
+    return r.json();
   }
   async function post(payload){
     const r=await fetch(API,{method:"POST",body:JSON.stringify(payload)}); return r.json();
+  }
+  /* Wipe locally cached data + any browser caches / service workers, so the next
+     load pulls the freshest published snapshot. */
+  async function clearCache(){
+    try{ localStorage.removeItem("yw_data"); }catch(e){}
+    try{ if(self.caches){ const ks=await caches.keys(); await Promise.all(ks.map(function(k){return caches.delete(k);})); } }catch(e){}
+    try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(function(r){return r.unregister();})); } }catch(e){}
+    return true;
   }
   function settingsMap(arr){ const m={}; (arr||[]).forEach(s=>{ if(s.key) m[s.key]=s.value; }); return m; }
 
@@ -62,5 +87,5 @@ window.YW = (function(){
     try{ var url=new URL(location.href); url.searchParams.set("lang", l==="zh"?"zh-hant":"en"); history.replaceState(null,"",url); }catch(e){}
   }
 
-  return {API,MON,CAT_ZH,TINT,ICON,USER_ICON,esc,isTrue,lines,lat,fmtDate,isPast,fetchData,post,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
+  return {API,DATA_URL,MON,CAT_ZH,TINT,ICON,USER_ICON,esc,isTrue,lines,lat,fmtDate,isPast,fetchData,fetchLive,post,clearCache,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
 })();
