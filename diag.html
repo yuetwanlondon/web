@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yuet Wan — Backend Diagnostic</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:760px;margin:0 auto;padding:28px 18px;color:#16130f;background:#f6f3ee;line-height:1.5}
+  h1{font-size:20px;margin:0 0 4px}
+  p.sub{color:#6b6257;margin:0 0 22px;font-size:14px}
+  .row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  input{flex:1;min-width:200px;border:1px solid #d8cfc0;border-radius:9px;padding:10px 12px;font-size:14px}
+  button{background:#c4452f;color:#fff;border:none;border-radius:30px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  #out{margin-top:20px}
+  .step{background:#fff;border:1px solid #e7ddcd;border-radius:12px;padding:14px 16px;margin-bottom:12px;font-size:14px}
+  .step b{display:block;margin-bottom:6px}
+  .ok{color:#2e7e72}.bad{color:#c4452f}.muted{color:#6b6257}
+  pre{background:#f0ece3;border-radius:8px;padding:10px;overflow:auto;font-size:12px;max-height:220px;margin:8px 0 0}
+  .verdict{border-width:2px;border-color:#16130f;font-size:15px}
+</style>
+</head>
+<body>
+<h1>Yuet Wan — Backend Diagnostic</h1>
+<p class="sub">This talks to your live Google Apps Script the same way the editor does, then tells you exactly where the About save breaks. Nothing here touches your real content except writing one obvious test row to the About tab (your next real Save replaces it).</p>
+
+<div class="row">
+  <input type="password" id="pass" placeholder="Editor password" autocomplete="current-password">
+  <button id="runBtn">Run full check</button>
+</div>
+
+<div id="out"></div>
+
+<script src="/assets/app.js"></script>
+<script>
+const out = document.getElementById("out");
+function card(title, cls){ const d=document.createElement("div"); d.className="step "+(cls||""); d.innerHTML="<b>"+title+"</b>"; out.appendChild(d); return d; }
+function add(d, html){ d.innerHTML += html; }
+function pre(obj){ try{ return "<pre>"+JSON.stringify(obj,null,2).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c])).slice(0,4000)+"</pre>"; }catch(e){ return "<pre>"+String(obj).slice(0,2000)+"</pre>"; } }
+
+async function run(){
+  out.innerHTML="";
+  const btn=document.getElementById("runBtn"); btn.disabled=true; btn.textContent="Checking…";
+  const pass=document.getElementById("pass").value;
+
+  // 0) Is app.js loaded?
+  if(typeof YW==="undefined" || !YW.fetchLive || !YW.post){
+    card("✗ Could not load your site's app.js","bad");
+    add(out.lastChild,"<div class='muted'>This page must live in your repo (e.g. as <code>/diag.html</code>) so it can load <code>/assets/app.js</code>. Open it at your site URL, not as a local file.</div>");
+    btn.disabled=false; btn.textContent="Run full check"; return;
+  }
+
+  // 1) READ — what does the live deployment return right now?
+  let j=null, readOK=false;
+  const c1=card("1. Reading from your live backend…");
+  try{
+    j=await YW.fetchLive();
+    readOK = j && typeof j==="object";
+    const ver = j && j.version ? j.version : "(no version field)";
+    const keys = j ? Object.keys(j).filter(k=>Array.isArray(j[k])) : [];
+    const hasAbout = j && ("about" in j);
+    const aboutLen = (j && Array.isArray(j.about)) ? j.about.length : "—";
+    add(c1, "<div class='ok'>✓ Reached the backend.</div>");
+    add(c1, "<div>Deployment version stamp: <b>"+ver+"</b></div>");
+    add(c1, "<div>Tabs returned: "+(keys.length?keys.join(", "):"(none)")+"</div>");
+    add(c1, "<div>About tab present in response: <b class='"+(hasAbout?"ok":"bad")+"'>"+(hasAbout?"YES":"NO")+"</b>, rows: <b>"+aboutLen+"</b></div>");
+    c1.className="step ok";
+  }catch(e){
+    add(c1, "<div class='bad'>✗ Could not read from the backend.</div>"+pre(e&&e.message||e));
+    c1.className="step bad";
+  }
+
+  // 2) WRITE — try to save a test row to the About tab
+  const stamp = new Date().toISOString();
+  let saveRes=null, saveOK=false;
+  const c2=card("2. Writing a test row to the About tab…");
+  try{
+    saveRes = await YW.post({action:"save", tab:"About", rows:[{key:"_diag_test", en:"diagnostic "+stamp, zh:"診斷測試"}], pass:pass});
+    saveOK = saveRes && saveRes.ok===true;
+    if(saveOK){ add(c2,"<div class='ok'>✓ The backend accepted the save.</div>"); c2.className="step ok"; }
+    else { add(c2,"<div class='bad'>✗ The backend refused the save.</div>"); c2.className="step bad"; }
+    add(c2, pre(saveRes));
+  }catch(e){
+    add(c2, "<div class='bad'>✗ The save request failed to send.</div>"+pre(e&&e.message||e));
+    c2.className="step bad";
+  }
+
+  // 3) RE-READ — did the test row come back?
+  const c3=card("3. Re-reading to confirm it stuck…");
+  try{
+    const j2=await YW.fetchLive();
+    const found = j2 && Array.isArray(j2.about) && j2.about.some(r=>r && r.key==="_diag_test");
+    if(found){ add(c3,"<div class='ok'>✓ The test row read back successfully. Full round-trip works.</div>"); c3.className="step ok"; }
+    else { add(c3,"<div class='bad'>✗ The test row did NOT read back.</div><div class='muted'>The write may have landed but the deployment isn't reading the About tab (old version), or read is cached.</div>"); c3.className="step bad"; }
+  }catch(e){
+    add(c3, "<div class='bad'>✗ Re-read failed.</div>"+pre(e&&e.message||e));
+    c3.className="step bad";
+  }
+
+  // 4) VERDICT
+  const v=card("Verdict","verdict");
+  let msg="";
+  if(!readOK){
+    msg="Your editor can't reach the Apps Script at all. The web-app URL in app.js is wrong, or the deployment was deleted. Fix the deployment URL.";
+  } else if(saveOK){
+    msg="✅ Your backend, deployment and Sheet are ALL WORKING — the test row saved. So the problem is your EDITOR, not the backend: you're running a cached/old editor.html. Clear cache and hard-refresh the editor (Ctrl/Cmd+Shift+R), then check it shows the 'Saved ✓' toast (not 'press Save changes'). Also open your Google Sheet now — you should see an About tab with a _diag_test row.";
+  } else if(saveRes && saveRes.error){
+    msg="The backend reached but REFUSED the save with: \""+saveRes.error+"\". "+(/unauthorized/i.test(saveRes.error)?"That means the password is wrong here OR the deployed ADMIN_PASS differs — re-check the password and redeploy a New version.":"Paste this whole page's results back and I'll tell you the exact fix.");
+  } else {
+    msg="The save didn't go through. Most likely the deployment is stale — redeploy: Apps Script → Deploy → Manage deployments → Edit (pencil) → Version: New version → Deploy. Then run this check again.";
+  }
+  add(v, "<div>"+msg+"</div>");
+
+  btn.disabled=false; btn.textContent="Run full check";
+}
+document.getElementById("runBtn").onclick=run;
+document.getElementById("pass").addEventListener("keydown",e=>{ if(e.key==="Enter") run(); });
+</script>
+</body>
+</html>
