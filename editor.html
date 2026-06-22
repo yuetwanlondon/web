@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="/assets/styles.css">
 <style>
 /* ---- editor chrome (on top of the shared site styles) ---- */
 body{background:var(--mist)}
@@ -25,6 +25,18 @@ body{background:var(--mist)}
 .sec-wrap{padding:46px 0 0}
 .sec-wrap.first{padding-top:30px}
 .addbtn{font-family:var(--grot);font-size:13px;font-weight:600;color:var(--vermilion-d);background:#fff;border:1.5px dashed var(--vermilion);border-radius:12px;padding:11px 18px;cursor:pointer;margin-top:16px}
+.postlist{display:flex;flex-direction:column;gap:12px}
+.post{display:flex;gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+.post .pthumb{width:96px;height:72px;border-radius:10px;overflow:hidden;flex:none;background:var(--mist);display:flex;align-items:center;justify-content:center}
+.post .pthumb img{width:100%;height:100%;object-fit:cover}
+.post .pthumb .ph{opacity:.4}.post .pthumb .ph svg{width:30px;height:30px}
+.post .pmeta{min-width:0}
+.post .pmeta h4{font-family:var(--disp);font-size:16px;margin:2px 0 3px}
+.post .pmeta p{color:var(--ink-55);font-size:13px;margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.post .pd{font-family:var(--grot);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--brass)}
+.dbadge{background:var(--vermilion);color:#fff;border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px;letter-spacing:.02em}
+.vbadge{background:var(--ink);color:var(--paper);border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px}
+.pempty{color:var(--ink-55);font-size:14px;padding:6px 2px}
 .addbtn:hover{background:#fbeae6}
 
 /* editable affordance */
@@ -128,7 +140,7 @@ body{background:var(--mist)}
     <span class="lg"><span class="dot"></span>Editor mode</span>
     <span class="sp"></span>
     <button id="langBtn">中文 preview</button>
-    <a href="index.html" target="_blank" rel="noopener">View site ↗</a>
+    <a href="/" target="_blank" rel="noopener">View site ↗</a>
     <button class="save" id="saveBtn" disabled>Saved</button>
     <button class="pub" id="publishBtn" title="Make your saved changes live on the website">Publish</button>
     <button id="logout">Sign out</button>
@@ -151,8 +163,19 @@ body{background:var(--mist)}
   <div class="pickgrid" id="pickGrid"></div>
 </div></div>
 
-<script src="assets/app.js"></script>
+<script src="/assets/app.js"></script>
 <script>
+const POST_FIELDS=[
+  {k:"id",t:"text",label:"ID (unique, no spaces)"},
+  {k:"status",t:"select",label:"Status",opts:["published","draft"]},
+  {k:"date",t:"text",label:"Date (YYYY-MM-DD)"},
+  {k:"title",t:"bi",label:"Title"},
+  {k:"summary",t:"bitext",label:"Summary — shown on the card"},
+  {k:"cover",t:"img",label:"Cover image"},
+  {k:"body",t:"bitext",label:"Article body — one paragraph per line"},
+  {k:"video",t:"text",label:"Video link (YouTube / Vimeo) — optional"},
+  {k:"images",t:"imgs",label:"More images — one per line"},
+];
 const SCHEMA = {
   events:{ tab:"Events",
     fields:[
@@ -210,6 +233,8 @@ const SCHEMA = {
       {k:"cta_label",t:"bi",label:"Button label (optional)"},
       {k:"cta_link",t:"text",label:"Button link (optional)"},
     ]},
+  learn:{ tab:"Learn", fields: POST_FIELDS },
+  news:{  tab:"News",  fields: POST_FIELDS },
 };
 const GROUPS=[
   {key:"honorary",en:"Honorary",zh:"名譽"},
@@ -225,7 +250,7 @@ const SETKEYS=[
 ];
 
 const $=id=>document.getElementById(id);
-let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
+let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[],learn:[],news:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
 const E=YW.esc, T=YW.isTrue, LN=YW.lines;
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function busy(on){$("busy").classList.toggle("on",on);}
@@ -247,7 +272,7 @@ async function boot(){
   busy(true);
   try{
     const j=await YW.fetchLive();
-    ["events","people","gallery","hero","settings"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
+    ["events","people","gallery","hero","settings","learn","news"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
     if(!DATA.settings.length) DATA.settings=SETKEYS.map(s=>({key:s.key,value:"",note:s.note}));
     Object.keys(DATA).forEach(k=>DATA[k].sort((a,b)=>(+a.order||0)-(+b.order||0)));
     $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
@@ -346,6 +371,22 @@ function renderPeople(host){
   }).join("");
 }
 
+function renderPosts(host,tab){
+  const list=DATA[tab]||[];
+  if(!list.length){ host.innerHTML=`<p class="pempty">No posts yet — click “Add” below.</p>`; return; }
+  host.innerHTML=`<div class="postlist">`+list.map((p,i)=>{
+    const cover = p.cover ? `<img src="${E(p.cover)}" alt="">` : `<span class="ph">${YW.lat()}</span>`;
+    const draft = String(p.status||"").toLowerCase()==="draft" ? `<span class="dbadge">Draft</span>` : "";
+    const vid   = p.video ? `<span class="vbadge">▶ video</span>` : "";
+    return `<div class="ed post" data-tab="${tab}" data-i="${i}">${tools(tab,i)}
+      <div class="pthumb">${cover}</div>
+      <div class="pmeta"><div class="pd">${E(p.date||"")} ${draft}${vid}</div>
+        <h4>${E(Lf(p,"title"))||"(untitled)"}</h4>
+        <p>${E(Lf(p,"summary")).slice(0,140)}</p></div>
+    </div>`;
+  }).join("")+`</div>`;
+}
+
 function renderSettings(host){
   host.innerHTML=`<div class="setpanel">${SETKEYS.map(sk=>{
     const row=DATA.settings.find(s=>s.key===sk.key)||{key:sk.key,value:""};
@@ -370,10 +411,12 @@ function renderAll(){
     <div class="sec-wrap"><div class="slabel"><h2>Past Events</h2><span class="ln"></span><span class="sub">過往活動</span></div><div id="s_past"></div><button class="addbtn" data-add="events" data-status="past">+ Add past event</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Gallery</h2><span class="ln"></span><span class="sub">花絮 · up to 5</span></div><div id="s_gal"></div><button class="addbtn" data-add="gallery">+ Add photo</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><button class="addbtn" data-add="learn">+ Add article</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><button class="addbtn" data-add="news">+ Add news post</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
-  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderSettings($("s_set"));
+  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSettings($("s_set"));
 }
 
 /* ---------- canvas actions ---------- */
