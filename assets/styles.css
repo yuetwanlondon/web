@@ -115,6 +115,11 @@ a{color:inherit;text-decoration:none}
 .pfeat .creds li{font-family:var(--grot);font-size:12.5px;color:var(--ink-80);background:var(--mist);border:1px solid var(--line);border-radius:8px;padding:6px 11px}
 .pfeat .bio{margin:16px 0 0}
 .pfeat .bio p{font-size:15px;line-height:1.65;color:var(--ink-80);margin:0 0 10px}
+.pfeat{cursor:pointer;transition:transform .2s,box-shadow .2s}
+.pfeat:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(22,19,15,.1)}
+.pfeat .more{font-family:var(--grot);font-size:13px;font-weight:600;color:var(--vermilion-d);margin-top:auto;padding-top:16px}
+.pbadge{position:absolute;top:10px;left:10px;z-index:2;font-family:var(--grot);font-size:11px;font-weight:700;letter-spacing:.02em;background:var(--vermilion);color:#fff;padding:5px 11px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.modal .box .ph .pbadge{top:10px;left:10px}
 .memgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
 .pcard{text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s}
 .pcard:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(22,19,15,.1)}
@@ -146,10 +151,10 @@ a{color:inherit;text-decoration:none}
 .foot .social a img.simg{width:23px;height:23px;object-fit:contain;display:block}
 
 /* ---------- page transition + scroll reveal ---------- */
-html.reveal-on :is(.sec,.news,.bloghead,.bgrid,.art,.elayout){opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.22,.61,.36,1),transform .6s cubic-bezier(.22,.61,.36,1)}
-html.reveal-on :is(.sec,.news,.bloghead,.bgrid,.art,.elayout).in{opacity:1;transform:none}
+html.reveal-on :is(.sec,.bloghead,.bgrid,.art,.elayout){opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.22,.61,.36,1),transform .6s cubic-bezier(.22,.61,.36,1)}
+html.reveal-on :is(.sec,.bloghead,.bgrid,.art,.elayout).in{opacity:1;transform:none}
 @media (prefers-reduced-motion: reduce){
-  html.reveal-on :is(.sec,.news,.bloghead,.bgrid,.art,.elayout){opacity:1;transform:none}
+  html.reveal-on :is(.sec,.bloghead,.bgrid,.art,.elayout){opacity:1;transform:none}
 }
 
 /* ---------- lightbox ---------- */

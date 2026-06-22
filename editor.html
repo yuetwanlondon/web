@@ -71,6 +71,14 @@ body{background:var(--mist)}
 .setrow .k{font-family:var(--grot);font-size:12.5px;font-weight:700;color:var(--ink-80)}
 .setrow .k small{display:block;font-weight:500;color:var(--ink-55);font-size:11px;margin-top:2px}
 .setrow input{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;font-family:var(--grot)}
+.abrow{display:grid;grid-template-columns:190px 1fr;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line-2,#EFEAE0);align-items:start}
+.abrow:last-child{border-bottom:none}
+.abrow .k{font-family:var(--grot);font-size:12.5px;font-weight:700;color:var(--ink-80);padding-top:6px}
+.abrow .k small{display:block;font-weight:500;color:var(--ink-55);font-size:11px;margin-top:2px}
+.abrow .fields{display:flex;flex-direction:column;gap:7px}
+.abrow .lab{font-family:var(--grot);font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--ink-55);text-transform:uppercase}
+.abrow input,.abrow textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;font-family:var(--grot);box-sizing:border-box}
+.abrow textarea{min-height:62px;resize:vertical;line-height:1.5}
 
 /* drawer */
 .dscrim{position:fixed;inset:0;background:rgba(22,19,15,.4);z-index:70;opacity:0;pointer-events:none;transition:.2s}
@@ -213,6 +221,7 @@ const SCHEMA = {
       {k:"id",t:"text",label:"ID (unique)"},
       {k:"group",t:"select",label:"Group",opts:["honorary","performer","music-leader","musician"]},
       {k:"featured",t:"bool",label:"Featured — large profile card"},
+      {k:"badge",t:"bi",label:"Badge — small corner label (e.g. Founder / 創辦人) — optional"},
       {k:"honorific",t:"bi",label:"Honorific (Mr. / 先生 · Master / 師傅)"},
       {k:"name",t:"bi",label:"Name"},
       {k:"role",t:"bi",label:"Role / title"},
@@ -259,8 +268,26 @@ const SETKEYS=[
   {key:"tagline_en",note:"Strapline (EN)"},{key:"tagline_zh",note:"Strapline (中文)"},{key:"motto_zh",note:"Motto"}
 ];
 
+const ABOUTKEYS=[
+  {key:"head_title",label:"Page heading"},
+  {key:"head_intro",label:"Intro paragraph",multi:true},
+  {key:"quote",label:"Lead quote"},
+  {key:"mission",label:"Mission — one paragraph per line",multi:true},
+  {key:"do1_title",label:"What We Do · 1 title"},{key:"do1_text",label:"What We Do · 1 text",multi:true},
+  {key:"do2_title",label:"What We Do · 2 title"},{key:"do2_text",label:"What We Do · 2 text",multi:true},
+  {key:"do3_title",label:"What We Do · 3 title"},{key:"do3_text",label:"What We Do · 3 text",multi:true},
+  {key:"story_lead",label:"Our story · lead line"},
+  {key:"story_body",label:"Our story · paragraph",multi:true},
+  {key:"stat1_num",label:"Stat 1 · number"},{key:"stat1_label",label:"Stat 1 · label"},
+  {key:"stat2_num",label:"Stat 2 · number"},{key:"stat2_label",label:"Stat 2 · label"},
+  {key:"stat3_num",label:"Stat 3 · number"},{key:"stat3_label",label:"Stat 3 · label"},
+  {key:"stat4_num",label:"Stat 4 · number"},{key:"stat4_label",label:"Stat 4 · label"},
+  {key:"cta_title",label:"Call-to-action heading"},
+  {key:"cta_text",label:"Call-to-action text",multi:true}
+];
+
 const $=id=>document.getElementById(id);
-let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[],learn:[],news:[],social:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
+let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[],learn:[],news:[],social:[],about:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
 const E=YW.esc, T=YW.isTrue, LN=YW.lines;
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function busy(on){$("busy").classList.toggle("on",on);}
@@ -282,7 +309,7 @@ async function boot(){
   busy(true);
   try{
     const j=await YW.fetchLive();
-    ["events","people","gallery","hero","settings","learn","news","social"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
+    ["events","people","gallery","hero","settings","learn","news","social","about"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
     if(!DATA.settings.length) DATA.settings=SETKEYS.map(s=>({key:s.key,value:"",note:s.note}));
     Object.keys(DATA).forEach(k=>DATA[k].sort((a,b)=>(+a.order||0)-(+b.order||0)));
     $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
@@ -411,6 +438,24 @@ function renderSocialEditor(host){
   }).join("")+`</div>`;
 }
 
+function renderAbout(host){
+  host.innerHTML=`<div class="setpanel">`+ABOUTKEYS.map(ak=>{
+    const row=DATA.about.find(s=>s.key===ak.key)||{key:ak.key,en:"",zh:""};
+    const fEN=ak.multi?`<textarea data-akey="${E(ak.key)}" data-l="en">${E(row.en||"")}</textarea>`:`<input data-akey="${E(ak.key)}" data-l="en" value="${E(row.en||"")}">`;
+    const fZH=ak.multi?`<textarea data-akey="${E(ak.key)}" data-l="zh">${E(row.zh||"")}</textarea>`:`<input data-akey="${E(ak.key)}" data-l="zh" value="${E(row.zh||"")}">`;
+    return `<div class="abrow"><div class="k">${E(ak.label)}</div><div class="fields"><span class="lab">English</span>${fEN}<span class="lab">中文</span>${fZH}</div></div>`;
+  }).join("")+`</div><button class="addbtn" id="abSave" style="border-style:solid">Save About page</button>`;
+  host.querySelector("#abSave").onclick=()=>{
+    ABOUTKEYS.forEach(ak=>{
+      let row=DATA.about.find(s=>s.key===ak.key);
+      if(!row){row={key:ak.key,en:"",zh:""};DATA.about.push(row);}
+      const en=host.querySelector(`[data-akey="${ak.key}"][data-l="en"]`), zh=host.querySelector(`[data-akey="${ak.key}"][data-l="zh"]`);
+      row.en=en?en.value:""; row.zh=zh?zh.value:"";
+    });
+    mark("about"); toast("About page updated — press Save changes");
+  };
+}
+
 function renderSettings(host){
   host.innerHTML=`<div class="setpanel">${SETKEYS.map(sk=>{
     const row=DATA.settings.find(s=>s.key===sk.key)||{key:sk.key,value:""};
@@ -437,11 +482,12 @@ function renderAll(){
     <div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><button class="addbtn" data-add="learn">+ Add article</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><button class="addbtn" data-add="news">+ Add news post</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
     <div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
-  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderSettings($("s_set"));
+  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set"));
 }
 
 /* ---------- canvas actions ---------- */

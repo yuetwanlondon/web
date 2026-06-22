@@ -139,7 +139,7 @@ window.YW = (function(){
     }
 
     if(reduce || !docEl.classList.contains('reveal-on')) return;
-    var SEL='.sec,.news,.bloghead,.bgrid,.art,.elayout', io;
+    var SEL='.sec,.bloghead,.bgrid,.art,.elayout', io;
     try{
       io=new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } }); }, {rootMargin:'0px 0px -6% 0px', threshold:0.04});
     }catch(e){

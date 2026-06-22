@@ -55,6 +55,20 @@ html.loader-on #yw-pre{display:flex}
 .news .ok{color:var(--brass-l);font-weight:600;margin-top:14px;display:none}
 .news .fine{color:rgba(244,236,221,.5);font-size:12.5px;margin-top:14px}
 @media(max-width:560px){.news form{flex-direction:column}.news input,.news .btn{width:100%;flex:0 0 auto;height:52px}}
+.slabel .seeall{font-family:var(--grot);font-size:14px;font-weight:600;color:var(--vermilion-d);text-decoration:none;white-space:nowrap}
+.slabel .seeall:hover{color:var(--vermilion)}
+.hnews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.hncard{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s}
+.hncard:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(22,19,15,.1)}
+.hnimg{aspect-ratio:16/10;background:var(--paper);overflow:hidden}
+.hnimg img{width:100%;height:100%;object-fit:cover;display:block}
+.hnimg .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--ink)}
+.hnbd{padding:20px 22px;display:flex;flex-direction:column;flex:1}
+.hndate{font-family:var(--grot);font-size:12.5px;color:var(--brass);text-transform:uppercase;letter-spacing:.05em}
+.hncard h3{font-family:var(--disp);font-weight:800;font-size:19px;margin:8px 0 0;line-height:1.3}
+.hncard p{font-size:14.5px;color:var(--ink-80);line-height:1.6;margin:8px 0 0;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hncard .go{font-family:var(--grot);font-size:13px;font-weight:600;color:var(--vermilion-d);margin-top:14px}
+@media(max-width:860px){.hnews-grid{grid-template-columns:1fr}}
 </style></head><body>
 
 <div id="yw-pre"><div class="pre-inner"><img class="pre-logo" src="/img/yuetwanlondon-main.svg" alt="Yuet Wan London"><div class="ring"><img id="yw-pre-gif" alt=""></div></div></div>
@@ -141,6 +155,11 @@ html.loader-on #yw-pre{display:flex}
 </div>
 </div></section>
 
+<section class="sec" id="hnewsSec" style="display:none"><div class="wrap">
+<div class="slabel"><h2 data-en="Latest News" data-zh="最新消息">Latest News</h2><span class="ln"></span><a class="seeall" href="/news/" data-en="View all →" data-zh="查看全部 →">View all →</a></div>
+<div id="hnews"></div>
+</div></section>
+
 <section class="sec"><div class="wrap">
 <div class="news"><div class="lat-bg" id="newslat"></div><div class="in">
 <p class="eyebrow" data-en="Stay in Touch" data-zh="保持聯繫">Stay in Touch</p>
@@ -190,9 +209,7 @@ YW.renderSocial();
 YW.initMotion();
 
 const FALLBACK_HERO=[{kicker_en:"Cantonese Opera in London",kicker_zh:"倫敦粵劇",title_en:"The sound of Lingnan, the stage of London",title_zh:"粵韻飄香 · 揚聲倫敦",sub_en:"A non-profit association promoting the art of Cantonese opera and music in the United Kingdom.",sub_zh:"非牟利團體，致力在英國推廣粵劇及粵樂藝術。",cta_label_en:"What's On",cta_label_zh:"近期活動",cta_link:"#whatson"}];
-const FALLBACK_EVENTS=[
-{id:"evt-2025",order:1,status:"past",category:"Performance",date_label:"7 Sep 2025",title_en:"Cantonese Opera Showcase 2025",title_zh:"粵韻飄香揚英倫 2025",venue_en:"Shaw Theatre, London",venue_zh:"倫敦邵氏劇院",desc_en:"Our inaugural showcase — a thirteen-segment programme of classic Cantonese opera and music.",desc_zh:"我們的首場演出 —— 十三個經典粵劇及粵樂選段。",image:""}];
-let DATA={hero:[],events:[],gallery:[]};
+let DATA={hero:[],events:[],gallery:[],news:[]};
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function gridClass(n){return n<=1?"cols-1":n===2?"cols-2":n===3?"cols-3":"cols-4";}
 function eCard(ev){
@@ -229,7 +246,28 @@ function renderGallery(){
  host.innerHTML='<div class="gal">'+items.map((g,i)=>{const img=g.image?('<img src="'+YW.esc(g.image)+'" alt="">'):('<div class="ph">'+YW.lat()+'</div>');return '<div class="t'+(i===0?' big':'')+'" data-img="'+YW.esc(g.image||"")+'">'+img+'</div>';}).join("")+'</div>';
  host.querySelectorAll(".gal .t").forEach(t=>t.onclick=()=>{const src=t.getAttribute("data-img");if(!src)return;document.getElementById("lbimg").src=src;document.getElementById("lb").classList.add("open");});
 }
-window.render=function(){renderHero();renderEvents(document.getElementById("upcoming"),"upcoming");renderEvents(document.getElementById("past"),"past");renderGallery();};
+function fmtD(d){ if(!d)return ""; var t=new Date(d); if(isNaN(t.getTime())) return String(d); return t.toLocaleDateString(LANG==="zh"?"zh-HK":"en-GB",{year:"numeric",month:"short",day:"numeric"}); }
+function renderNews(){
+ const sec=document.getElementById("hnewsSec"), host=document.getElementById("hnews");
+ if(!sec||!host) return;
+ let items=(DATA.news||[]).filter(n=>String(n.status||"published").toLowerCase()!=="draft");
+ items.sort(function(a,b){var ao=(+a.order||0),bo=(+b.order||0); if(ao!==bo)return ao-bo; return String(b.date||"").localeCompare(String(a.date||""));});
+ const top=items.slice(0,3);
+ if(!top.length){ sec.style.display="none"; return; }
+ sec.style.display="";
+ host.innerHTML='<div class="hnews-grid">'+top.map(function(n){
+  const img=n.cover?('<img src="'+YW.esc(n.cover)+'" alt="" loading="lazy">'):('<div class="ph">'+YW.lat()+'</div>');
+  const date=fmtD(n.date);
+  return '<a class="hncard" href="/news/?id='+encodeURIComponent(n.id||"")+'">'+
+   '<div class="hnimg">'+img+'</div><div class="hnbd">'+
+   (date?'<div class="hndate">'+YW.esc(date)+'</div>':'')+
+   '<h3><span class="cjk">'+YW.esc(Lf(n,"title"))+'</span></h3>'+
+   (Lf(n,"summary")?'<p>'+YW.esc(Lf(n,"summary"))+'</p>':'')+
+   '<div class="go">'+(LANG==="zh"?"閱讀更多 →":"Read more →")+'</div>'+
+   '</div></a>';
+ }).join("")+'</div>';
+}
+window.render=function(){renderHero();renderEvents(document.getElementById("upcoming"),"upcoming");renderEvents(document.getElementById("past"),"past");renderGallery();renderNews();};
 document.getElementById("lbx").onclick=()=>document.getElementById("lb").classList.remove("open");
 document.getElementById("lb").onclick=e=>{if(e.target.id==="lb")document.getElementById("lb").classList.remove("open");};
 document.getElementById("newslat").innerHTML=YW.lat();
@@ -240,6 +278,6 @@ document.getElementById("newsBtn").onclick=async function(){
  document.getElementById("newsForm").style.display="none";
  document.getElementById("newsOk").style.display="block";
 };
-(async function(){try{const j=await YW.fetchData();DATA.hero=j.hero||[];DATA.events=(j.events||[]);DATA.gallery=j.gallery||[];if(!DATA.events.length)DATA.events=FALLBACK_EVENTS;}catch(e){DATA.events=FALLBACK_EVENTS;}render();if(window.__pre)window.__pre();})();
+(async function(){try{const j=await YW.fetchData();DATA.hero=j.hero||[];DATA.events=(j.events||[]);DATA.gallery=j.gallery||[];DATA.news=(j.news||[]);}catch(e){}render();if(window.__pre)window.__pre();})();
 
 </script></body></html>

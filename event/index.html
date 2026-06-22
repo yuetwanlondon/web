@@ -196,7 +196,7 @@ document.getElementById("lbx").onclick=()=>document.getElementById("lb").classLi
 document.getElementById("lb").onclick=e=>{if(e.target.id==="lb")document.getElementById("lb").classList.remove("open");};
 (async function(){
  const id=new URLSearchParams(location.search).get("id");
- try{const j=await YW.fetchData();const evs=j.events||[];EV=evs.find(x=>String(x.id)===String(id))||evs.find(x=>!YW.isPast(x))||evs[0]||null;}catch(e){EV=null;}
+ try{const j=await YW.fetchData();const evs=j.events||[];EV=evs.find(x=>String(x.id)===String(id))||null;}catch(e){EV=null;}
  render();
  if(window.__pre)window.__pre();
 })();
