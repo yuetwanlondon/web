@@ -22,7 +22,7 @@ html.pre-skip #yw-pre{display:none!important}
 #yw-pre .ring img{width:100%;height:100%;object-fit:cover;border-radius:50%;opacity:0;transition:opacity .5s ease}
 #yw-pre.in .pre-logo,#yw-pre.in .ring{opacity:1}
 </style>
-<script>try{if(sessionStorage.getItem('yw_seen')){document.documentElement.className+=' pre-skip';}else{sessionStorage.setItem('yw_seen','1');}}catch(e){}</script>
+<script>try{if(sessionStorage.getItem('yw_seen')){document.documentElement.className+=' pre-skip';}else{sessionStorage.setItem('yw_seen','1');}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('reveal-on');}}catch(e){}</script>
 <link rel="stylesheet" href="/assets/styles.css">
 <style>
 .hero .inner .btns{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
@@ -176,6 +176,7 @@ document.getElementById("langtog").onclick=function(){setLang(LANG==="en"?"zh":"
 YW.applyStaticLang(LANG);
 YW.setupNav();
 YW.renderSocial();
+YW.initMotion();
 
 const FALLBACK_HERO=[{kicker_en:"Cantonese Opera in London",kicker_zh:"倫敦粵劇",title_en:"The sound of Lingnan, the stage of London",title_zh:"粵韻飄香 · 揚聲倫敦",sub_en:"A non-profit association promoting the art of Cantonese opera and music in the United Kingdom.",sub_zh:"非牟利團體，致力在英國推廣粵劇及粵樂藝術。",cta_label_en:"What's On",cta_label_zh:"近期活動",cta_link:"#whatson"}];
 const FALLBACK_EVENTS=[
