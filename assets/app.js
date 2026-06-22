@@ -3,7 +3,7 @@
    ===================================================================== */
 window.YW = (function(){
   const API = "https://script.google.com/macros/s/AKfycbyUoOwvu32QbKPaLIueyJFFSqft0b7qoASYEImHE3Mj-kRBxphaLbm1yyuXigFfiDKDrw/exec";
-  const DATA_URL = "data.json"; // static snapshot baked by the GitHub Action (Jamstack)
+  const DATA_URL = "/data.json"; // static snapshot baked by the GitHub Action (Jamstack)
   const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const CAT_ZH = {Performance:"演出",Workshop:"工作坊",Talk:"講座",Music:"音樂"};
   const TINT = {Performance:"#C8402E",Workshop:"#2E7E72",Talk:"#B8893C",Music:"#3E6E84"};
