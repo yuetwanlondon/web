@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="/img/yuetwanlondon-favicon.png">
 <title>Yuet Wan London — Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +38,8 @@ body{background:var(--mist)}
 .dbadge{background:var(--vermilion);color:#fff;border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px;letter-spacing:.02em}
 .vbadge{background:var(--ink);color:var(--paper);border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px}
 .pempty{color:var(--ink-55);font-size:14px;padding:6px 2px}
+.schip{width:54px;height:54px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.schip svg{width:24px;height:24px;fill:currentColor}
 .addbtn:hover{background:#fbeae6}
 
 /* editable affordance */
@@ -235,6 +238,12 @@ const SCHEMA = {
     ]},
   learn:{ tab:"Learn", fields: POST_FIELDS },
   news:{  tab:"News",  fields: POST_FIELDS },
+  social:{ tab:"Social",
+    fields:[
+      {k:"id",t:"text",label:"ID (unique, no spaces)"},
+      {k:"platform",t:"select",label:"Platform",opts:["Facebook","Instagram","YouTube","Rednote","WhatsApp","X","TikTok","LinkedIn","Pinterest"]},
+      {k:"url",t:"text",label:"Link (full URL, e.g. https://instagram.com/yourname)"},
+    ]},
 };
 const GROUPS=[
   {key:"honorary",en:"Honorary",zh:"名譽"},
@@ -250,7 +259,7 @@ const SETKEYS=[
 ];
 
 const $=id=>document.getElementById(id);
-let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[],learn:[],news:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
+let AUTH=null, DATA={events:[],people:[],gallery:[],hero:[],settings:[],learn:[],news:[],social:[]}, LANG="en", DIRTY=new Set(), HSEL=0, EDIT={tab:null,i:-1};
 const E=YW.esc, T=YW.isTrue, LN=YW.lines;
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function busy(on){$("busy").classList.toggle("on",on);}
@@ -272,7 +281,7 @@ async function boot(){
   busy(true);
   try{
     const j=await YW.fetchLive();
-    ["events","people","gallery","hero","settings","learn","news"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
+    ["events","people","gallery","hero","settings","learn","news","social"].forEach(k=>DATA[k]=(j&&j[k])?j[k]:[]);
     if(!DATA.settings.length) DATA.settings=SETKEYS.map(s=>({key:s.key,value:"",note:s.note}));
     Object.keys(DATA).forEach(k=>DATA[k].sort((a,b)=>(+a.order||0)-(+b.order||0)));
     $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
@@ -387,6 +396,20 @@ function renderPosts(host,tab){
   }).join("")+`</div>`;
 }
 
+function renderSocialEditor(host){
+  const list=DATA.social||[];
+  if(!list.length){ host.innerHTML=`<p class="pempty">No social links yet — click “Add” below.</p>`; return; }
+  host.innerHTML=`<div class="postlist">`+list.map((s,i)=>{
+    const key=String(s.platform||"").toLowerCase();
+    const p=(YW.SOCIAL&&YW.SOCIAL[key])||null;
+    const chip=p?`<span class="schip" style="background:${p.bg}">${p.svg}</span>`:`<span class="schip" style="background:#999">?</span>`;
+    return `<div class="ed post" data-tab="social" data-i="${i}">${tools("social",i)}
+      ${chip}
+      <div class="pmeta"><h4>${E(p?p.name:(s.platform||"(choose platform)"))}</h4><p>${E(s.url||"")}</p></div>
+    </div>`;
+  }).join("")+`</div>`;
+}
+
 function renderSettings(host){
   host.innerHTML=`<div class="setpanel">${SETKEYS.map(sk=>{
     const row=DATA.settings.find(s=>s.key===sk.key)||{key:sk.key,value:""};
@@ -413,10 +436,11 @@ function renderAll(){
     <div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><button class="addbtn" data-add="learn">+ Add article</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><button class="addbtn" data-add="news">+ Add news post</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
-  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSettings($("s_set"));
+  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderSettings($("s_set"));
 }
 
 /* ---------- canvas actions ---------- */
