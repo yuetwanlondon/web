@@ -687,7 +687,7 @@ function fieldHTML(f,r){
   if(f.t==="num") return `<div class="fld"><label>${E(f.label)}</label><input type="number" id="${id}" value="${E(r[f.k])}"></div>`;
   if(f.t==="bool") return `<div class="fld"><label class="chk"><input type="checkbox" id="${id}" ${T(r[f.k])?'checked':''}> ${E(f.label)}</label></div>`;
   if(f.t==="img"){ const v=E(r[f.k]); return `<div class="fld"><label>${E(f.label)}</label><div class="imgbox"><div class="pv">${v?`<img id="pv_${f.k}" src="${v}">`:`<span>no image</span>`}</div><div class="ic"><input type="text" id="${id}" value="${v}" placeholder="Image URL (or upload / choose)"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload<input type="file" accept="image/*" data-k="${f.k}" data-multi="0"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="0">Choose existing</button></div></div></div></div>`; }
-  if(f.t==="imgs") return `<div class="fld"><label>${E(f.label)}</label><textarea id="${id}" placeholder="One image URL per line">${E(r[f.k])}</textarea><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload &amp; add<input type="file" accept="image/*" data-k="${f.k}" data-multi="1"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="1">Choose existing</button></div></div>`;
+  if(f.t==="imgs") return `<div class="fld"><label>${E(f.label)}</label><textarea id="${id}" placeholder="One image URL per line">${E(r[f.k])}</textarea><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload &amp; add<input type="file" accept="image/*" multiple data-k="${f.k}" data-multi="1"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="1">Choose existing</button></div></div>`;
   return `<div class="fld"><label>${E(f.label)}</label><input type="text" id="${id}" value="${E(r[f.k])}"></div>`;
 }
 
@@ -818,17 +818,25 @@ async function compressImage(file){
 }
 
 async function onFile(inp){
-  if(!inp.files[0])return; const k=inp.dataset.k, multi=inp.dataset.multi==="1"; busy(true);
-  try{
-    const f=inp.files[0];
-    const img=await compressImage(f);
-    const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:EDIT.tab});
-    if(!res||!res.ok||!res.url) throw new Error(res&&res.error||"upload failed");
-    if(multi){ const ta=$("f_"+k); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+res.url; }
-    else{ $("f_"+k).value=res.url; const box=$("f_"+k).closest(".imgbox").querySelector(".pv"); box.innerHTML=`<img src="${res.url}">`; }
-    toast(`Uploaded — ${fmtBytes(f.size)} → ${fmtBytes(img.bytes)}`);
-    IMG_CACHE={};
-  }catch(e){ alert("Upload failed: "+e.message); }
+  const files=Array.prototype.slice.call(inp.files||[]); if(!files.length) return;
+  const k=inp.dataset.k, multi=inp.dataset.multi==="1"; busy(true);
+  let ok=0, fail=0, savedTotal=0, origTotal=0; const failNames=[];
+  for(let n=0;n<files.length;n++){
+    const f=files[n];
+    if(files.length>1) toast(`Uploading ${n+1} of ${files.length}…`);
+    try{
+      const img=await compressImage(f);
+      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:EDIT.tab});
+      if(!res||!res.ok||!res.url) throw new Error(res&&res.error||"upload failed");
+      if(multi){ const ta=$("f_"+k); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+res.url; }
+      else{ $("f_"+k).value=res.url; const box=$("f_"+k).closest(".imgbox").querySelector(".pv"); if(box) box.innerHTML=`<img src="${res.url}">`; }
+      ok++; savedTotal+=img.bytes; origTotal+=f.size;
+    }catch(e){ fail++; failNames.push(f.name||("image "+(n+1))); }
+  }
+  IMG_CACHE={};
+  if(!fail) toast(files.length>1 ? `Uploaded ${ok} images — ${fmtBytes(origTotal)} → ${fmtBytes(savedTotal)}` : `Uploaded — ${fmtBytes(origTotal)} → ${fmtBytes(savedTotal)}`);
+  else if(ok) toast(`Uploaded ${ok} of ${files.length} — ${fail} failed (${failNames.slice(0,3).join(", ")})`);
+  else alert("Upload failed: "+failNames.join(", "));
   inp.value=""; busy(false);
 }
 
