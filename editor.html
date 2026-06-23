@@ -783,6 +783,15 @@ function richClear(){
   c.range.insertNode(frag);
 }
 
+/* ---------- per-item Drive folder: uploads go to "<section>/<id>" ---------- */
+function curItemId(){
+  const el=$("f_id");
+  let id=(el&&el.value)?el.value:((DATA[EDIT.tab]&&DATA[EDIT.tab][EDIT.i])?DATA[EDIT.tab][EDIT.i].id:"");
+  id=String(id||"").replace(/[^a-zA-Z0-9_-]/g,"");
+  return id||"misc";
+}
+function uploadFolder(){ return EDIT.tab+"/"+curItemId(); }
+
 /* ---------- client-side image compression (shrinks before upload to save Drive space) ---------- */
 const IMG_MAX_EDGE = 2000;                 // longest side in px — plenty sharp for hero / full-bleed
 const IMG_QUALITY  = 0.82;                 // JPEG quality — high quality, much smaller files
@@ -827,7 +836,7 @@ async function onFile(inp){
     if(files.length>1) toast(`Uploading ${n+1} of ${files.length}…`);
     try{
       const img=await compressImage(f);
-      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:EDIT.tab});
+      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:uploadFolder()});
       if(!res||!res.ok||!res.url) throw new Error(res&&res.error||"upload failed");
       if(multi){ const ta=$("f_"+k); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+res.url; }
       else{ $("f_"+k).value=res.url; const box=$("f_"+k).closest(".imgbox").querySelector(".pv"); if(box) box.innerHTML=`<img src="${res.url}">`; }
@@ -845,7 +854,7 @@ async function onFile(inp){
 let PICK={key:null,multi:false}, IMG_CACHE={};
 async function loadImages(folder){ if(IMG_CACHE[folder])return IMG_CACHE[folder]; const res=await YW.post({action:"images",pass:AUTH.pass,folder:folder}); if(res&&res.ok&&res.images){IMG_CACHE[folder]=res.images;return res.images;} throw new Error(res&&res.error||"could not list images"); }
 function openPicker(key,multi){
-  PICK={key,multi}; const folder=EDIT.tab; const g=$("pickGrid"); g.innerHTML='<div class="pickempty">Loading…</div>'; $("pickwrap").classList.add("open");
+  PICK={key,multi}; const folder=uploadFolder(); const g=$("pickGrid"); g.innerHTML='<div class="pickempty">Loading…</div>'; $("pickwrap").classList.add("open");
   loadImages(folder).then(imgs=>{
     if(!imgs.length){ g.innerHTML='<div class="pickempty">No images uploaded to this section yet. Use “Upload” to add one.</div>'; return; }
     g.innerHTML=imgs.map(im=>`<div class="pk" data-url="${E(im.url)}" title="${E(im.name)}"><img src="${E(im.url)}" loading="lazy" alt=""></div>`).join("");
