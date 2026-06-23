@@ -164,7 +164,7 @@ window.render=function(){
  const root=document.getElementById("evRoot");
  if(!EV){root.innerHTML='<div class="wrap" style="padding:calc(var(--nav-h) + 80px) 0 100px;text-align:center"><h1 style="font-family:var(--disp)">'+L("nf")+'</h1><p><a class="eback" href="/">← '+L("back")+'</a></p></div>';return;}
  const ev=EV,cat=ev.category||"Performance",past=YW.isPast(ev);
- const img=ev.image?('<img class="cover" src="'+YW.esc(ev.image)+'" alt="">'):('<div class="ph">'+YW.lat()+'</div>');
+ const bsrc=ev.banner||ev.image; const img=bsrc?('<img class="cover" src="'+YW.esc(bsrc)+'" alt="">'):('<div class="ph">'+YW.lat()+'</div>');
  const body=YW.richLines(Lf(ev,"body")),prog=YW.richLines(Lf(ev,"programme")),take=YW.richLines(Lf(ev,"learn")),bring=YW.richLines(Lf(ev,"bring")),arts=YW.richLines(Lf(ev,"artists")),gal=YW.lines(ev.gallery);
  let main="";
  if(Lf(ev,"desc")&&!body.length)main+='<div class="esec"><h2>'+L("about")+'</h2><p>'+YW.rich(Lf(ev,"desc"))+'</p></div>';
