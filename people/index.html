@@ -147,16 +147,16 @@ let PEOPLE=[];
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function initials(p){return String(p.name_en||"").split(/\s+/).filter(Boolean).map(w=>w[0]).join("").slice(0,2).toUpperCase();}
 function photo(p){if(p.photo)return '<img class="cover" src="'+YW.esc(p.photo)+'" alt="">';const i=initials(p);return '<div class="place">'+YW.lat()+(i?'<span class="init">'+i+'</span>':'<span class="usr">'+YW.USER_ICON+'</span>')+'</div>';}
-function badge(p){var b=Lf(p,"badge");return b?'<span class="pbadge">'+YW.esc(b)+'</span>':'';}
+function badge(p){var b=Lf(p,"badge");return b?'<span class="pbadge">'+YW.rich(b)+'</span>':'';}
 function pFeat(p,idx){
- const creds=YW.lines(Lf(p,"credentials")),bio=YW.lines(Lf(p,"bio"));
+ const creds=YW.richLines(Lf(p,"credentials")),bio=YW.richLines(Lf(p,"bio"));
  const nm=LANG==="zh"?('<span class="cjk">'+YW.esc(p.name_zh||p.name_en)+'</span>'+(Lf(p,"honorific")?'<small>'+YW.esc(p.honorific_zh||Lf(p,"honorific"))+'</small>':'')):(YW.esc(p.name_en||p.name_zh)+(p.name_zh&&p.name_en?' <small class="cjk">'+YW.esc(p.name_zh)+'</small>':''));
- return '<article class="pfeat" data-i="'+idx+'"><div class="ph">'+badge(p)+photo(p)+'</div><div class="body"><div class="role">'+YW.esc(Lf(p,"role"))+'</div><div class="nm">'+nm+'</div>'+
- (creds.length?'<ul class="creds">'+creds.map(c=>'<li>'+YW.esc(c)+'</li>').join("")+'</ul>':'')+
- (bio.length?'<div class="bio">'+bio.map(t=>'<p>'+YW.esc(t)+'</p>').join("")+'</div>':'')+'<div class="more">'+(LANG==="zh"?"查看詳情 →":"View details →")+'</div></div></article>';
+ return '<article class="pfeat" data-i="'+idx+'"><div class="ph">'+badge(p)+photo(p)+'</div><div class="body"><div class="role">'+YW.rich(Lf(p,"role"))+'</div><div class="nm">'+nm+'</div>'+
+ (creds.length?'<ul class="creds">'+creds.map(c=>'<li>'+c+'</li>').join("")+'</ul>':'')+
+ (bio.length?'<div class="bio">'+bio.map(t=>'<p>'+t+'</p>').join("")+'</div>':'')+'<div class="more">'+(LANG==="zh"?"查看詳情 →":"View details →")+'</div></div></article>';
 }
 function pCard(p,idx){
- return '<button class="pcard" data-i="'+idx+'"><div class="ph">'+badge(p)+photo(p)+'</div><div class="pb"><div class="role">'+YW.esc(Lf(p,"role"))+'</div><div class="nm">'+YW.esc(p.name_zh||p.name_en)+(p.name_en&&p.name_zh?'<small>'+YW.esc(p.name_en)+'</small>':'')+'</div></div></button>';
+ return '<button class="pcard" data-i="'+idx+'"><div class="ph">'+badge(p)+photo(p)+'</div><div class="pb"><div class="role">'+YW.rich(Lf(p,"role"))+'</div><div class="nm">'+YW.esc(p.name_zh||p.name_en)+(p.name_en&&p.name_zh?'<small>'+YW.esc(p.name_en)+'</small>':'')+'</div></div></button>';
 }
 window.render=function(){
  const host=document.getElementById("people");
@@ -173,11 +173,11 @@ window.render=function(){
  host.querySelectorAll(".pcard,.pfeat").forEach(b=>b.onclick=()=>openModal(PEOPLE[+b.dataset.i]));
 };
 function openModal(p){
- const creds=YW.lines(Lf(p,"credentials")),bio=YW.lines(Lf(p,"bio"));const i=initials(p);
+ const creds=YW.richLines(Lf(p,"credentials")),bio=YW.richLines(Lf(p,"bio"));const i=initials(p);
  const ph=p.photo?('<img src="'+YW.esc(p.photo)+'" alt="">'):('<div class="place">'+YW.lat()+'<span class="init">'+i+'</span></div>');
  document.getElementById("modalBox").innerHTML='<button class="close" id="mclose"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'+
- '<div class="top"><div class="ph">'+badge(p)+ph+'</div><div><div class="role">'+YW.esc(Lf(p,"role"))+'</div><div class="nm"><span class="cjk">'+YW.esc(p.name_zh||p.name_en)+'</span></div>'+(p.name_en?'<div style="color:var(--ink-55);font-size:14px;margin-top:3px">'+YW.esc(p.name_en)+'</div>':'')+(creds.length?'<ul class="creds">'+creds.map(c=>'<li>'+YW.esc(c)+'</li>').join("")+'</ul>':'')+'</div></div>'+
- (bio.length?'<div class="bio">'+bio.map(t=>'<p>'+YW.esc(t)+'</p>').join("")+'</div>':'<div style="height:20px"></div>');
+ '<div class="top"><div class="ph">'+badge(p)+ph+'</div><div><div class="role">'+YW.rich(Lf(p,"role"))+'</div><div class="nm"><span class="cjk">'+YW.esc(p.name_zh||p.name_en)+'</span></div>'+(p.name_en?'<div style="color:var(--ink-55);font-size:14px;margin-top:3px">'+YW.esc(p.name_en)+'</div>':'')+(creds.length?'<ul class="creds">'+creds.map(c=>'<li>'+c+'</li>').join("")+'</ul>':'')+'</div></div>'+
+ (bio.length?'<div class="bio">'+bio.map(t=>'<p>'+t+'</p>').join("")+'</div>':'<div style="height:20px"></div>');
  document.getElementById("modal").classList.add("open");
  document.getElementById("mclose").onclick=closeModal;
 }

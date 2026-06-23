@@ -177,8 +177,8 @@ async function render(){
 function card(p){
   const cov = p.cover ? '<div class="cov"><img src="'+YW.esc(p.cover)+'" alt="" loading="lazy"></div>' : '<div class="cov"><span class="ph">'+YW.lat()+'</span></div>';
   return '<a class="bcard" href="'+BASE+'?id='+encodeURIComponent(p.id||"")+'">'+cov+
-    '<div class="bc"><div class="bd">'+YW.esc(fmt(p.date))+'</div><h3>'+YW.esc(L(p,"title"))+'</h3>'+
-    '<p>'+YW.esc(L(p,"summary"))+'</p><span class="more">'+(LANG==="zh"?"閱讀 →":"Read →")+'</span></div></a>';
+    '<div class="bc"><div class="bd">'+YW.esc(fmt(p.date))+'</div><h3>'+YW.rich(L(p,"title"))+'</h3>'+
+    '<p>'+YW.rich(L(p,"summary"))+'</p><span class="more">'+(LANG==="zh"?"閱讀 →":"Read →")+'</span></div></a>';
 }
 function renderList(root, meta){
   const head='<div class="bloghead"><div class="kick">'+YW.esc(LANG==="zh"?meta.kick_zh:meta.kick_en)+'</div><h1>'+YW.esc(LANG==="zh"?meta.zh:meta.en)+'</h1><p>'+YW.esc(LANG==="zh"?meta.sub_zh:meta.sub_en)+'</p></div>';
@@ -188,15 +188,15 @@ function renderList(root, meta){
 }
 function renderArticle(root, p, meta){
   if(!p){ root.innerHTML='<div class="blogwrap"><div class="art"><a class="eback" href="'+BASE+'">← '+(LANG==="zh"?"返回":"Back")+'</a><h1>'+(LANG==="zh"?"找不到文章":"Article not found")+'</h1></div></div>'; document.title=(LANG==="zh"?meta.zh:meta.en)+" · Yuet Wan London"; return; }
-  document.title=L(p,"title")+" · Yuet Wan London";
+  document.title=YW.plain(L(p,"title"))+" · Yuet Wan London";
   const cover = p.cover ? '<img class="cover" src="'+YW.esc(p.cover)+'" alt="">' : '';
-  const body = YW.lines(L(p,"body")).map(function(t){return '<p>'+YW.esc(t)+'</p>';}).join("");
+  const body = YW.richLines(L(p,"body")).map(function(t){return '<p>'+t+'</p>';}).join("");
   const imgs = YW.lines(p.images).filter(Boolean);
   const gal = imgs.length ? '<div class="agal">'+imgs.map(function(u){return '<img src="'+YW.esc(u)+'" alt="" loading="lazy">';}).join("")+'</div>' : '';
   root.innerHTML='<div class="blogwrap"><article class="art">'+
     '<a class="eback" href="'+BASE+'">← '+YW.esc(LANG==="zh"?meta.all_zh:meta.all_en)+'</a>'+
     '<div class="kick">'+YW.esc(LANG==="zh"?meta.zh:meta.en)+'</div>'+
-    '<h1>'+YW.esc(L(p,"title"))+'</h1>'+
+    '<h1>'+YW.rich(L(p,"title"))+'</h1>'+
     '<div class="meta">'+YW.esc(fmt(p.date))+'</div>'+
     cover+'<div class="body">'+body+'</div>'+vEmbed(p.video)+gal+
     '</article></div>';

@@ -235,6 +235,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 }
 
 /* ---- rich-text field + formatting toolbar ---- */
+#s_about .rtbar{top:calc(54px + env(safe-area-inset-top) + 6px)}
 .rich{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;font-family:var(--grot);line-height:1.55;box-sizing:border-box;background:#fff;overflow-wrap:anywhere}
 .rich:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .rich:empty:before{content:attr(data-ph);color:var(--ink-55);pointer-events:none}
@@ -313,7 +314,7 @@ const POST_FIELDS=[
   {k:"status",t:"select",label:"Status",opts:["published","draft"]},
   {k:"date",t:"text",label:"Date (YYYY-MM-DD)"},
   {k:"title",t:"bi",rich:true,label:"Title"},
-  {k:"summary",t:"bitext",label:"Summary — shown on the card"},
+  {k:"summary",t:"bitext",rich:true,label:"Summary — shown on the card"},
   {k:"cover",t:"img",label:"Cover image"},
   {k:"body",t:"bitext",rich:true,label:"Article body — one paragraph per line"},
   {k:"video",t:"text",label:"Video link (YouTube / Vimeo) — optional"},
@@ -328,7 +329,7 @@ const SCHEMA = {
       {k:"date_start",t:"text",label:"Start date (YYYY-MM-DD)"},
       {k:"date_end",t:"text",label:"End date (optional)"},
       {k:"date_label",t:"text",label:"Date label — overrides the shown date"},
-      {k:"title",t:"bi",label:"Title"},
+      {k:"title",t:"bi",rich:true,label:"Title"},
       {k:"venue",t:"bi",rich:true,label:"Venue"},
       {k:"time",t:"bi",rich:true,label:"Time"},
       {k:"duration",t:"bi",rich:true,label:"Duration"},
@@ -352,28 +353,28 @@ const SCHEMA = {
       {k:"id",t:"text",label:"ID (unique)"},
       {k:"group",t:"select",label:"Group",opts:["honorary","performer","music-leader","musician"]},
       {k:"featured",t:"bool",label:"Featured — large profile card"},
-      {k:"badge",t:"bi",label:"Badge — small corner label (e.g. Founder / 創辦人) — optional"},
+      {k:"badge",t:"bi",rich:true,label:"Badge — small corner label (e.g. Founder / 創辦人) — optional"},
       {k:"honorific",t:"bi",label:"Honorific (Mr. / 先生 · Master / 師傅)"},
       {k:"name",t:"bi",label:"Name"},
-      {k:"role",t:"bi",label:"Role / title"},
-      {k:"credentials",t:"bitext",label:"Credentials — one per line"},
-      {k:"bio",t:"bitext",label:"Bio — one paragraph per line"},
+      {k:"role",t:"bi",rich:true,label:"Role / title"},
+      {k:"credentials",t:"bitext",rich:true,label:"Credentials — one per line"},
+      {k:"bio",t:"bitext",rich:true,label:"Bio — one paragraph per line"},
       {k:"photo",t:"img",label:"Photo"},
     ]},
   gallery:{ tab:"Gallery",
     fields:[
       {k:"id",t:"text",label:"ID (unique)"},
       {k:"image",t:"img",label:"Image"},
-      {k:"title",t:"bi",label:"Title"},
+      {k:"title",t:"bi",rich:true,label:"Title"},
       {k:"info",t:"bitext",label:"Info / caption"},
     ]},
   hero:{ tab:"Hero",
     fields:[
       {k:"id",t:"text",label:"ID (unique)"},
       {k:"image",t:"img",label:"Slide image"},
-      {k:"kicker",t:"bi",label:"Kicker (small label)"},
-      {k:"title",t:"bi",label:"Title"},
-      {k:"sub",t:"bitext",label:"Subtitle"},
+      {k:"kicker",t:"bi",rich:true,label:"Kicker (small label)"},
+      {k:"title",t:"bi",rich:true,label:"Title"},
+      {k:"sub",t:"bitext",rich:true,label:"Subtitle"},
       {k:"cta_label",t:"bi",label:"Button label (optional)"},
       {k:"cta_link",t:"text",label:"Button link (optional)"},
     ]},
@@ -492,9 +493,9 @@ function renderHero(host){
     const img=s.image?`<img class="cover" src="${E(s.image)}" alt="">`:`<div class="ph">${YW.lat()}</div>`;
     return `<div class="slide ${i===HSEL?'on':''}">${img}<div class="scrim"></div>
       <div class="inner"><div class="wrap">
-        ${Lf(s,"kicker")?`<div class="kick">${E(Lf(s,"kicker"))}</div>`:""}
-        <h1>${E(Lf(s,"title")||"Slide title")}</h1>
-        ${Lf(s,"sub")?`<p class="sub">${E(Lf(s,"sub"))}</p>`:""}
+        ${Lf(s,"kicker")?`<div class="kick">${YW.rich(Lf(s,"kicker"))}</div>`:""}
+        <h1>${YW.rich(Lf(s,"title"))||"Slide title"}</h1>
+        ${Lf(s,"sub")?`<p class="sub">${YW.rich(Lf(s,"sub"))}</p>`:""}
       </div></div></div>`;
   }).join("") : `<div class="slide on"><div class="ph">${YW.lat()}</div><div class="scrim"></div><div class="inner"><div class="wrap"><h1 style="opacity:.6">No hero slides yet</h1></div></div></div>`;
   const dots = slides.length>1 ? `<div class="dots">${slides.map((s,i)=>`<button data-h="${i}" class="${i===HSEL?'on':''}"></button>`).join("")}</div>`:"";
@@ -514,19 +515,19 @@ function renderGallery(host){
 }
 
 function pFeat(p,i){
-  const creds=LN(Lf(p,"credentials")), bio=LN(Lf(p,"bio"));
+  const creds=YW.richLines(Lf(p,"credentials")), bio=YW.richLines(Lf(p,"bio"));
   const nm = LANG==="zh" ? `<span class="cjk">${E(p.name_zh||p.name_en)}</span>${Lf(p,"honorific")?`<small>${E(p.honorific_zh||Lf(p,"honorific"))}</small>`:""}` : `${E(p.name_en||p.name_zh)}${p.name_zh&&p.name_en?` <small class="cjk">${E(p.name_zh)}</small>`:""}`;
   return `<div class="ed" data-tab="people" data-i="${i}">${tools("people",i)}
     <article class="pfeat"><div class="ph">${photo(p)}</div><div class="body">
-      <div class="role">${E(Lf(p,"role"))}</div><div class="nm">${nm}</div>
-      ${creds.length?`<ul class="creds">${creds.map(c=>`<li>${E(c)}</li>`).join("")}</ul>`:""}
-      ${bio.length?`<div class="bio">${bio.map(t=>`<p>${E(t)}</p>`).join("")}</div>`:""}
+      <div class="role">${YW.rich(Lf(p,"role"))}</div><div class="nm">${nm}</div>
+      ${creds.length?`<ul class="creds">${creds.map(c=>`<li>${c}</li>`).join("")}</ul>`:""}
+      ${bio.length?`<div class="bio">${bio.map(t=>`<p>${t}</p>`).join("")}</div>`:""}
     </div></article></div>`;
 }
 function pCard(p,i){
   return `<div class="ed" data-tab="people" data-i="${i}">${tools("people",i)}
     <div class="pcard"><div class="ph">${photo(p)}</div><div class="pb">
-      <div class="role">${E(Lf(p,"role"))}</div>
+      <div class="role">${YW.rich(Lf(p,"role"))}</div>
       <div class="nm">${E(p.name_zh||p.name_en)}${p.name_en&&p.name_zh?`<small>${E(p.name_en)}</small>`:""}</div>
     </div></div></div>`;
 }
@@ -552,8 +553,8 @@ function renderPosts(host,tab){
     return `<div class="ed post" data-tab="${tab}" data-i="${i}">${tools(tab,i)}
       <div class="pthumb">${cover}</div>
       <div class="pmeta"><div class="pd">${E(p.date||"")} ${draft}${vid}</div>
-        <h4>${E(Lf(p,"title"))||"(untitled)"}</h4>
-        <p>${E(Lf(p,"summary")).slice(0,140)}</p></div>
+        <h4>${YW.rich(Lf(p,"title"))||"(untitled)"}</h4>
+        <p>${E(YW.plain(Lf(p,"summary")).slice(0,140))}</p></div>
     </div>`;
   }).join("")+`</div>`;
 }
@@ -573,18 +574,22 @@ function renderSocialEditor(host){
 }
 
 function renderAbout(host){
-  host.innerHTML=`<div class="setpanel">`+ABOUTKEYS.map(ak=>{
+  const abPlain=k=>/_num$/.test(k);   // stat numbers stay plain inputs
+  const mk=(ak,l,v)=> abPlain(ak.key)
+    ? `<input data-akey="${E(ak.key)}" data-l="${l}" value="${E(v||"")}">`
+    : `<div class="rich${l==="zh"?" cjk-in":""}" data-akey="${E(ak.key)}" data-l="${l}" contenteditable="true" data-ph="${l==="zh"?"輸入文字…":"Type here…"}">${toEditable(v||"")}</div>`;
+  host.innerHTML=richBarHTML()+`<div class="setpanel">`+ABOUTKEYS.map(ak=>{
     const row=DATA.about.find(s=>s.key===ak.key)||{key:ak.key,en:"",zh:""};
-    const fEN=ak.multi?`<textarea data-akey="${E(ak.key)}" data-l="en">${E(row.en||"")}</textarea>`:`<input data-akey="${E(ak.key)}" data-l="en" value="${E(row.en||"")}">`;
-    const fZH=ak.multi?`<textarea data-akey="${E(ak.key)}" data-l="zh">${E(row.zh||"")}</textarea>`:`<input data-akey="${E(ak.key)}" data-l="zh" value="${E(row.zh||"")}">`;
-    return `<div class="abrow"><div class="k">${E(ak.label)}</div><div class="fields"><span class="lab">English</span>${fEN}<span class="lab">中文</span>${fZH}</div></div>`;
+    return `<div class="abrow"><div class="k">${E(ak.label)}</div><div class="fields"><span class="lab">English</span>${mk(ak,"en",row.en)}<span class="lab">中文</span>${mk(ak,"zh",row.zh)}</div></div>`;
   }).join("")+`</div><button class="addbtn" id="abSave" style="border-style:solid">Save About page</button>`;
+  wireRichBar(host);
   host.querySelector("#abSave").onclick=async()=>{
     ABOUTKEYS.forEach(ak=>{
       let row=DATA.about.find(s=>s.key===ak.key);
       if(!row){row={key:ak.key,en:"",zh:""};DATA.about.push(row);}
       const en=host.querySelector(`[data-akey="${ak.key}"][data-l="en"]`), zh=host.querySelector(`[data-akey="${ak.key}"][data-l="zh"]`);
-      row.en=en?en.value:""; row.zh=zh?zh.value:"";
+      const rd=el=> !el ? "" : (el.classList&&el.classList.contains("rich") ? YW.rich(el.innerHTML) : el.value);
+      row.en=rd(en); row.zh=rd(zh);
     });
     mark("about"); await saveAll();
   };
@@ -700,7 +705,7 @@ const IC_UNDO='<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round
 const IC_REDO='<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h1"/></svg>';
 function richBarHTML(){
   const sw=(c,t)=>'<button type="button" class="sw" data-color="'+c+'" style="background:'+c+'" title="'+t+'" aria-label="'+t+'"></button>';
-  return '<div class="rtbar" id="rtbar">'
+  return '<div class="rtbar">'
     +'<button type="button" data-cmd="bold" title="Bold" aria-label="Bold">'+IC_BOLD+'</button>'
     +'<button type="button" data-cmd="light" title="Light" aria-label="Light">'+IC_LIGHT+'</button>'
     +'<span class="rtsep"></span><span class="lbl">Colour</span>'
@@ -714,15 +719,15 @@ function richBarHTML(){
     +'</div>';
 }
 let RICH_ACTIVE=null;
-function wireRichBar(){
-  RICH_ACTIVE=null;
-  $("dBody").querySelectorAll(".rich").forEach(ed=>{
+function wireRichBar(scope){
+  scope=scope||$("dBody");
+  scope.querySelectorAll(".rich").forEach(ed=>{
     histInit(ed);
     ed.addEventListener("focusin",()=>{RICH_ACTIVE=ed;});
     ed.addEventListener("input",()=>{ const h=RT_HIST.get(ed); if(!h)return; clearTimeout(h.t); h.t=setTimeout(()=>histPush(ed),250); });
     ed.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); document.execCommand("insertLineBreak"); }});
   });
-  const bar=$("rtbar"); if(!bar) return;
+  const bar=scope.querySelector(".rtbar"); if(!bar) return;
   bar.addEventListener("mousedown",e=>{
     const b=e.target.closest("button"); if(!b) return;
     e.preventDefault();                       // keep the editor's text selection

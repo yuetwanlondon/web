@@ -234,9 +234,9 @@ function renderHero(){
   const img=s.image?('<img class="cover" src="'+YW.esc(s.image)+'" alt="">'):('<div class="ph">'+YW.lat()+'</div>');
   const cta=Lf(s,"cta_label")?('<div class="btns"><a class="btn btn-fill" href="'+YW.esc(s.cta_link||"#whatson")+'">'+YW.esc(Lf(s,"cta_label"))+'</a></div>'):"";
   return '<div class="slide '+(i===0?"on":"")+'">'+img+'<div class="scrim"></div><div class="inner"><div class="wrap">'+
-   (Lf(s,"kicker")?'<div class="kick">'+YW.esc(Lf(s,"kicker"))+'</div>':'')+
-   '<h1>'+YW.esc(Lf(s,"title"))+'</h1>'+
-   (Lf(s,"sub")?'<p class="sub">'+YW.esc(Lf(s,"sub"))+'</p>':'')+cta+'</div></div></div>';
+   (Lf(s,"kicker")?'<div class="kick">'+YW.rich(Lf(s,"kicker"))+'</div>':'')+
+   '<h1>'+YW.rich(Lf(s,"title"))+'</h1>'+
+   (Lf(s,"sub")?'<p class="sub">'+YW.rich(Lf(s,"sub"))+'</p>':'')+cta+'</div></div></div>';
  }).join("");
  if(slides.length>1){let i=0;clearInterval(window._hero);window._hero=setInterval(()=>{const els=document.querySelectorAll("#heroSlides .slide");els[i].classList.remove("on");i=(i+1)%els.length;els[i].classList.add("on");},5500);}
 }
@@ -261,8 +261,8 @@ function renderNews(){
   return '<a class="hncard" href="/news/?id='+encodeURIComponent(n.id||"")+'">'+
    '<div class="hnimg">'+img+'</div><div class="hnbd">'+
    (date?'<div class="hndate">'+YW.esc(date)+'</div>':'')+
-   '<h3><span class="cjk">'+YW.esc(Lf(n,"title"))+'</span></h3>'+
-   (Lf(n,"summary")?'<p>'+YW.esc(Lf(n,"summary"))+'</p>':'')+
+   '<h3><span class="cjk">'+YW.rich(Lf(n,"title"))+'</span></h3>'+
+   (Lf(n,"summary")?'<p>'+YW.rich(Lf(n,"summary"))+'</p>':'')+
    '<div class="go">'+(LANG==="zh"?"閱讀更多 →":"Read more →")+'</div>'+
    '</div></a>';
  }).join("")+'</div>';
