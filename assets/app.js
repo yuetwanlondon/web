@@ -18,6 +18,66 @@ window.YW = (function(){
   function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function isTrue(v){return v===true||String(v).toUpperCase()==="TRUE";}
   function lines(s){return String(s||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);}
+
+  /* ---------- rich text: whitelist-sanitise stored HTML for safe rendering ----------
+     Allowed: <strong> <em> <span style="color|background-color|font-weight"> <br>.
+     Everything else is unwrapped (text kept); block tags become a line break. */
+  function rich(html){
+    if(html==null) return "";
+    var src=String(html);
+    if(src.indexOf("<")<0 && src.indexOf("&")<0) return esc(src);
+    var box=document.createElement("div"); box.innerHTML=src;
+    var ALLOW={STRONG:"STRONG",B:"STRONG",EM:"EM",I:"EM",SPAN:"SPAN",BR:"BR"};
+    function cstyle(st){
+      var out=[];
+      String(st||"").split(";").forEach(function(d){
+        var i=d.indexOf(":"); if(i<0) return;
+        var p=d.slice(0,i).trim().toLowerCase(), v=d.slice(i+1).trim(); if(!v) return;
+        if(p==="color"||p==="background-color"){
+          if(/^#[0-9a-fA-F]{3,8}$/.test(v)||/^rgba?\([\d.,\s%]+\)$/.test(v)||/^[a-zA-Z]+$/.test(v)) out.push(p+":"+v);
+        }else if(p==="font-weight"){
+          if(/^(300|400|500|600|700|800|bold|normal|lighter)$/i.test(v)) out.push("font-weight:"+v);
+        }
+      });
+      return out.join(";");
+    }
+    (function walk(node){
+      var kids=Array.prototype.slice.call(node.childNodes);
+      for(var i=0;i<kids.length;i++){
+        var c=kids[i];
+        if(c.nodeType===3) continue;
+        if(c.nodeType!==1){ if(c.parentNode) c.parentNode.removeChild(c); continue; }
+        var tag=c.tagName.toUpperCase();
+        if(!ALLOW[tag]){
+          if(tag==="SCRIPT"||tag==="STYLE"){ c.parentNode.removeChild(c); continue; }
+          walk(c);
+          var par=c.parentNode, block=(tag==="P"||tag==="DIV"||tag==="LI");
+          while(c.firstChild) par.insertBefore(c.firstChild,c);
+          if(block) par.insertBefore(document.createElement("br"),c);
+          par.removeChild(c);
+          continue;
+        }
+        var name=ALLOW[tag], rep=document.createElement(name);
+        if(name==="SPAN"){ var cs=cstyle(c.getAttribute("style")); if(cs) rep.setAttribute("style",cs); }
+        while(c.firstChild) rep.appendChild(c.firstChild);
+        c.parentNode.replaceChild(rep,c);
+        walk(rep);
+        if(name==="SPAN" && !rep.getAttribute("style")){
+          var p2=rep.parentNode; while(rep.firstChild) p2.insertBefore(rep.firstChild,rep); p2.removeChild(rep);
+        }
+      }
+    })(box);
+    return box.innerHTML;
+  }
+  /* split sanitised rich text into items on <br> (new data) OR \n (older plain data) */
+  function richLines(html){
+    var clean=rich(html), parts=clean.split(/<br\s*\/?>|\n/i), out=[], tmp=document.createElement("div");
+    for(var i=0;i<parts.length;i++){
+      tmp.innerHTML=parts[i];
+      if(tmp.textContent.replace(/\u00a0/g," ").trim().length) out.push(parts[i].trim());
+    }
+    return out;
+  }
   function lat(){const id="l"+Math.random().toString(36).slice(2,7);return '<svg class="lat" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice"><defs><pattern id="'+id+'" width="40" height="70" patternUnits="userSpaceOnUse"><path d="M20 0 L40 11 L40 35 L20 46 L0 35 L0 11Z M20 46 L40 57 L40 81 M20 46 L0 57 L0 81" fill="none" stroke="#F4ECDD" stroke-width="1.3"/></pattern></defs><rect width="200" height="200" fill="url(#'+id+')"/></svg>';}
   function fmtDate(ev,lang){
     if(ev.date_label) return ev.date_label;
@@ -151,5 +211,5 @@ window.YW = (function(){
     try{ new MutationObserver(function(){ if(pend)return; pend=true; requestAnimationFrame(function(){ pend=false; scan(); }); }).observe(document.body,{childList:true,subtree:true}); }catch(e){}
   }
 
-  return {API,DATA_URL,MON,CAT_ZH,TINT,ICON,USER_ICON,SOCIAL,esc,isTrue,lines,lat,fmtDate,isPast,fetchData,fetchLive,post,clearCache,renderSocial,initMotion,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
+  return {API,DATA_URL,MON,CAT_ZH,TINT,ICON,USER_ICON,SOCIAL,esc,isTrue,lines,lat,fmtDate,isPast,rich,richLines,fetchData,fetchLive,post,clearCache,renderSocial,initMotion,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
 })();
