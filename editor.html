@@ -117,32 +117,32 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .setrow:last-child{border-bottom:none}
 .setrow .k{font-family:var(--grot);font-size:12.5px;font-weight:700;color:var(--ink-80)}
 .setrow .k small{display:block;font-weight:500;color:var(--ink-55);font-size:11px;margin-top:2px}
-.setrow input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:var(--grot)}
+.setrow input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:var(--grot)}
 .abrow{display:grid;grid-template-columns:190px 1fr;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line-2,#EFEAE0);align-items:start}
 .abrow:last-child{border-bottom:none}
 .abrow .k{font-family:var(--grot);font-size:12.5px;font-weight:700;color:var(--ink-80);padding-top:6px}
 .abrow .k small{display:block;font-weight:500;color:var(--ink-55);font-size:11px;margin-top:2px}
 .abrow .fields{display:flex;flex-direction:column;gap:7px}
 .abrow .lab{font-family:var(--grot);font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--ink-55);text-transform:uppercase}
-.abrow input,.abrow textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:var(--grot);box-sizing:border-box}
+.abrow input,.abrow textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:var(--grot);box-sizing:border-box}
 .abrow textarea{min-height:64px;resize:vertical;line-height:1.5}
 .setrow input:focus,.abrow input:focus,.abrow textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 
 /* ---- edit drawer (right panel on desktop, bottom sheet on mobile) ---- */
-.dscrim{position:fixed;inset:0;background:rgba(22,19,15,.42);z-index:70;opacity:0;pointer-events:none;transition:.2s}
+.dscrim{position:fixed;inset:0;background:rgba(22,19,15,.42);z-index:70;opacity:0;pointer-events:none;transition:.2s;touch-action:none}
 .dscrim.open{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,92vw);background:#fff;z-index:71;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.2)}
 .drawer.open{transform:none}
 .drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
 .drawer .dh h3{font-family:var(--disp);font-size:17px;margin:0;font-weight:800}
-.drawer .db{padding:18px 20px;overflow:auto;flex:1;-webkit-overflow-scrolling:touch}
+.drawer .db{padding:18px 20px;overflow:auto;flex:1;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .drawer .df{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
 .iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--ink-55)}
 .iconbtn:hover{color:var(--ink);border-color:var(--brass)}.iconbtn svg{width:17px;height:17px}
 .btn-sm{height:auto;padding:12px 18px;font-size:14px;border-radius:11px}
 .fld{margin-bottom:16px}
 .fld>label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-55);margin-bottom:7px}
-.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;font-family:var(--grot)}
+.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:16px;font-family:var(--grot)}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .fld textarea{min-height:84px;resize:vertical;line-height:1.55}
 .fld .cjk-in{font-family:var(--cjk)}
@@ -188,7 +188,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .hint{color:var(--ink-55);font-size:13px;margin:-14px 0 4px}
 
 /* ---- google-doc picker ---- */
-.doclist{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch}
+.doclist{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .docrow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;font-family:var(--grot)}
 .docrow:hover{border-color:var(--vermilion);box-shadow:0 6px 18px rgba(0,0,0,.08)}
 .docrow .dn{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;font-weight:600;color:var(--ink)}
@@ -201,7 +201,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .pickbox{background:#fff;border-radius:18px;width:min(740px,95vw);max-height:84vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.3)}
 .pickhd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
 .pickhd b{font-family:var(--disp);font-size:16px}
-.pickgrid{padding:16px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;-webkit-overflow-scrolling:touch}
+.pickgrid{padding:16px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .pickgrid .pk{aspect-ratio:1/1;border-radius:11px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--mist)}
 .pickgrid .pk img{width:100%;height:100%;object-fit:cover}
 .pickgrid .pk:hover{border-color:var(--vermilion);box-shadow:0 6px 18px rgba(0,0,0,.12)}
@@ -255,7 +255,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 
 /* ---- rich-text field + formatting toolbar ---- */
 #s_about .rtbar{top:calc(54px + env(safe-area-inset-top) + 64px)}
-.rich{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;font-family:var(--grot);line-height:1.55;box-sizing:border-box;background:#fff;overflow-wrap:anywhere}
+.rich{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:16px;font-family:var(--grot);line-height:1.55;box-sizing:border-box;background:#fff;overflow-wrap:anywhere}
 .rich:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .rich:empty:before{content:attr(data-ph);color:var(--ink-55);pointer-events:none}
 .rich.cjk-in{font-family:var(--cjk)}
@@ -729,6 +729,8 @@ function openDrawer(tab,i){
   $("dscrim").classList.add("open"); $("drawer").classList.add("open");
 }
 function closeDrawer(){ $("dscrim").classList.remove("open"); $("drawer").classList.remove("open"); }
+function closePicker(){ if($("pickwrap").classList.contains("open")){ $("pickwrap").classList.remove("open"); if(window.YW&&YW.lockScroll)YW.lockScroll(false); } }
+function closeDocPicker(){ if($("docpickwrap").classList.contains("open")){ $("docpickwrap").classList.remove("open"); if(window.YW&&YW.lockScroll)YW.lockScroll(false); } }
 function fieldHTML(f,r){
   const id="f_"+f.k;
   if((f.t==="bi"||f.t==="bitext")&&f.rich){
@@ -869,13 +871,13 @@ function openDocPicker(section){
   DOCPICK_SECTION=section;
   const list=$("docList"); list.innerHTML='<div class="pickempty">Loading…</div>';
   $("docpickTitle").textContent="Choose a Doc from the "+(section==="news"?"\u201cnews\u201d":"\u201cblogs\u201d")+" folder";
-  $("docpickwrap").classList.add("open");
+  $("docpickwrap").classList.add("open"); if(window.YW&&YW.lockScroll)YW.lockScroll(true);
   YW.post({action:"listDocs",pass:AUTH.pass,section:section}).then(res=>{
     if(!res||!res.ok) throw new Error(res&&res.error||"couldn't list Docs");
     const docs=res.docs||[];
     if(!docs.length){ list.innerHTML='<div class="pickempty">No Google Docs in that folder yet. Add one and refresh.</div>'; return; }
     list.innerHTML=docs.map(d=>'<button type="button" class="docrow" data-id="'+E(d.id)+'"><span class="dn">'+ICON_DOC+'<span>'+E(d.name)+'</span></span><span class="dd">'+E(fmtDocDate(d.modified))+'</span></button>').join("");
-    list.querySelectorAll(".docrow").forEach(b=>b.onclick=()=>{ $("docpickwrap").classList.remove("open"); importDocById(DOCPICK_SECTION, b.dataset.id); });
+    list.querySelectorAll(".docrow").forEach(b=>b.onclick=()=>{ closeDocPicker(); importDocById(DOCPICK_SECTION, b.dataset.id); });
   }).catch(err=>{ list.innerHTML='<div class="pickempty">Could not load Docs.<br><small>'+E(String(err.message||err))+'</small></div>'; });
 }
 async function importDocById(section, docId){
@@ -963,7 +965,7 @@ async function onFile(inp){
 let PICK={key:null,multi:false}, IMG_CACHE={};
 async function loadImages(folder){ if(IMG_CACHE[folder])return IMG_CACHE[folder]; const res=await YW.post({action:"images",pass:AUTH.pass,folder:folder}); if(res&&res.ok&&res.images){IMG_CACHE[folder]=res.images;return res.images;} throw new Error(res&&res.error||"could not list images"); }
 function openPicker(key,multi){
-  PICK={key,multi}; const folder=uploadFolder(); const g=$("pickGrid"); g.innerHTML='<div class="pickempty">Loading…</div>'; $("pickwrap").classList.add("open");
+  PICK={key,multi}; const folder=uploadFolder(); const g=$("pickGrid"); g.innerHTML='<div class="pickempty">Loading…</div>'; $("pickwrap").classList.add("open"); if(window.YW&&YW.lockScroll)YW.lockScroll(true);
   loadImages(folder).then(imgs=>{
     if(!imgs.length){ g.innerHTML='<div class="pickempty">No images uploaded to this section yet. Use “Upload” to add one.</div>'; return; }
     g.innerHTML=imgs.map(im=>`<div class="pk" data-url="${E(im.url)}" title="${E(im.name)}"><img src="${E(im.url)}" loading="lazy" alt=""></div>`).join("");
@@ -974,7 +976,7 @@ function choosePick(url){
   const key=PICK.key;
   if(PICK.multi){ const ta=$("f_"+key); ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+url; }
   else{ const inp=$("f_"+key); inp.value=url; const box=inp.closest(".imgbox").querySelector(".pv"); if(box)box.innerHTML=`<img src="${url}">`; }
-  $("pickwrap").classList.remove("open");
+  closePicker();
 }
 function applyDrawer(){
   const r=DATA[EDIT.tab][EDIT.i];
@@ -1039,11 +1041,11 @@ $("saveBtn").onclick=saveAll;
 $("publishBtn").onclick=publishNow;
 $("dClose").onclick=closeDrawer; $("dCancel").onclick=closeDrawer; $("dApply").onclick=applyDrawer;
 $("dscrim").onclick=closeDrawer;
-$("pickClose").onclick=()=>$("pickwrap").classList.remove("open");
-$("docpickClose").onclick=()=>$("docpickwrap").classList.remove("open");
-$("docpickwrap").onclick=e=>{if(e.target.id==="docpickwrap")$("docpickwrap").classList.remove("open");};
-$("pickwrap").onclick=e=>{if(e.target.id==="pickwrap")$("pickwrap").classList.remove("open");};
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeMenu(); closeDrawer(); $("pickwrap").classList.remove("open"); $("docpickwrap").classList.remove("open"); } });
+$("pickClose").onclick=closePicker;
+$("docpickClose").onclick=closeDocPicker;
+$("docpickwrap").onclick=e=>{if(e.target.id==="docpickwrap")closeDocPicker();};
+$("pickwrap").onclick=e=>{if(e.target.id==="pickwrap")closePicker();};
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeMenu(); closeDrawer(); closePicker(); closeDocPicker(); } });
 window.addEventListener("beforeunload",e=>{ if(DIRTY.size){ e.preventDefault(); e.returnValue=""; } });
 (function(){ const a=sessionStorage.getItem("yw_auth"); if(a){ AUTH=JSON.parse(a); boot(); } })();
 </script>
