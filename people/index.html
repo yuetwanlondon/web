@@ -50,6 +50,7 @@ html.loader-on #yw-pre{display:flex}
 .modal .box .creds li{font-family:var(--grot);font-size:12px;color:var(--ink-80);background:var(--mist);border:1px solid var(--line);border-radius:7px;padding:5px 10px}
 .modal .box .bio{padding:18px 26px 26px}.modal .box .bio p{font-size:14.5px;line-height:1.65;color:var(--ink-80);margin:0 0 10px}
 .modal .box .close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;display:grid;place-items:center}
+@media(max-width:600px){.modal .box .close{width:40px;height:40px;top:12px;right:12px}}
 </style></head><body>
 
 <div id="yw-pre"><div class="pre-inner"><img class="pre-logo" src="/img/yuetwanlondon-main.svg" alt="Yuet Wan London"><div class="ring"><img id="yw-pre-gif" src="/img/pre-load-1.gif" alt=""></div></div></div>
@@ -176,10 +177,10 @@ function openModal(p){
  document.getElementById("modalBox").innerHTML='<button class="close" id="mclose"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'+
  '<div class="top"><div class="ph">'+badge(p)+ph+'</div><div><div class="role">'+YW.rich(Lf(p,"role"))+'</div><div class="nm"><span class="cjk">'+YW.esc(p.name_zh||p.name_en)+'</span></div>'+(p.name_en?'<div style="color:var(--ink-55);font-size:14px;margin-top:3px">'+YW.esc(p.name_en)+'</div>':'')+(creds.length?'<ul class="creds">'+creds.map(c=>'<li>'+c+'</li>').join("")+'</ul>':'')+'</div></div>'+
  (bio.length?'<div class="bio">'+bio.map(t=>'<p>'+t+'</p>').join("")+'</div>':'<div style="height:20px"></div>');
- document.getElementById("modal").classList.add("open");
+ document.getElementById("modal").classList.add("open");if(window.YW&&YW.lockScroll)YW.lockScroll(true);
  document.getElementById("mclose").onclick=closeModal;
 }
-function closeModal(){document.getElementById("modal").classList.remove("open");}
+function closeModal(){document.getElementById("modal").classList.remove("open");if(window.YW&&YW.lockScroll)YW.lockScroll(false);}
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal();};
 document.getElementById("latbg").innerHTML=YW.lat();
 (async function(){try{const j=await YW.fetchData();PEOPLE=(j.people||[]);}catch(e){PEOPLE=[];}PEOPLE.sort((a,b)=>(+a.order||0)-(+b.order||0));render();if(window.__pre)window.__pre();})();

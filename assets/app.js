@@ -151,7 +151,36 @@ window.YW = (function(){
   /* wire the mobile burger menu */
   function setupNav(){
     const b=document.getElementById("burger"), n=document.getElementById("navlinks");
-    if(b&&n){ b.onclick=()=>n.classList.toggle("open"); n.querySelectorAll("a").forEach(a=>a.onclick=()=>n.classList.remove("open")); }
+    if(!b||!n) return;
+    function close(){ n.classList.remove("open"); b.classList.remove("open"); b.setAttribute("aria-expanded","false"); }
+    function toggle(){ var willOpen=!n.classList.contains("open"); n.classList.toggle("open",willOpen); b.classList.toggle("open",willOpen); b.setAttribute("aria-expanded",willOpen?"true":"false"); }
+    b.setAttribute("aria-expanded","false");
+    b.onclick=function(e){ e.stopPropagation(); toggle(); };
+    n.querySelectorAll("a").forEach(a=>a.addEventListener("click",close));
+    var lt=document.getElementById("langtog");
+    if(lt) lt.addEventListener("click",close);            // switching language now closes the mobile menu
+    document.addEventListener("click",function(e){        // tapping outside the open menu closes it
+      if(!n.classList.contains("open")) return;
+      if(n.contains(e.target)||b.contains(e.target)) return;
+      close();
+    });
+  }
+  /* lock background scrolling while a full-screen overlay (lightbox / modal) is open — iOS-safe */
+  function lockScroll(on){
+    var bd=document.body; if(!bd) return;
+    if(on){
+      if(bd.classList.contains("yw-lock")) return;
+      var y=window.scrollY||window.pageYOffset||0;
+      bd.dataset.ywY=String(y);
+      bd.style.position="fixed"; bd.style.top=(-y)+"px"; bd.style.left="0"; bd.style.right="0"; bd.style.width="100%";
+      bd.classList.add("yw-lock");
+    } else {
+      if(!bd.classList.contains("yw-lock")) return;
+      var y=parseInt(bd.dataset.ywY||"0",10)||0;
+      bd.style.position=""; bd.style.top=""; bd.style.left=""; bd.style.right=""; bd.style.width="";
+      bd.classList.remove("yw-lock");
+      window.scrollTo(0,y);
+    }
   }
 
   /* language persistence: survives across pages via localStorage, shareable via ?lang=zh-hant */
@@ -223,5 +252,5 @@ window.YW = (function(){
     try{ new MutationObserver(function(){ if(pend)return; pend=true; requestAnimationFrame(function(){ pend=false; scan(); }); }).observe(document.body,{childList:true,subtree:true}); }catch(e){}
   }
 
-  return {API,DATA_URL,MON,CAT_ZH,TINT,ICON,USER_ICON,SOCIAL,esc,isTrue,lines,lat,fmtDate,isPast,rich,richLines,plain,fetchData,fetchLive,post,clearCache,renderSocial,initMotion,settingsMap,applyStaticLang,setupNav,loadLang,saveLang};
+  return {API,DATA_URL,MON,CAT_ZH,TINT,ICON,USER_ICON,SOCIAL,esc,isTrue,lines,lat,fmtDate,isPast,rich,richLines,plain,fetchData,fetchLive,post,clearCache,renderSocial,initMotion,settingsMap,applyStaticLang,setupNav,loadLang,saveLang,lockScroll};
 })();

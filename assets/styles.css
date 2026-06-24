@@ -41,7 +41,10 @@ a{color:inherit;text-decoration:none}
 .langtog{font-family:var(--grot);font-size:12px;font-weight:600;color:var(--paper);background:transparent;border:1px solid var(--line-d);border-radius:40px;padding:7px 13px;cursor:pointer}
 .cta{font-family:var(--grot);font-size:13px;font-weight:600;background:var(--vermilion);color:var(--paper);border:none;border-radius:40px;padding:9px 18px;cursor:pointer}
 .burger{display:none;background:none;border:none;cursor:pointer;padding:8px}
-.burger span{display:block;width:22px;height:2px;background:var(--paper);margin:4px 0}
+.burger span{display:block;width:22px;height:2px;background:var(--paper);margin:4px 0;transition:transform .3s ease,opacity .2s ease}
+.burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
 /* ---------- shared bits ---------- */
 .eyebrow{font-family:var(--grot);text-transform:uppercase;letter-spacing:.24em;font-size:11.5px;font-weight:600;color:var(--vermilion-d);margin:0 0 10px}
