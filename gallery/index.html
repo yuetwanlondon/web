@@ -30,13 +30,13 @@ html.loader-on #yw-pre{display:flex}
 }catch(e){}</script>
 <link rel="stylesheet" href="/assets/styles.css">
 <style>
-.phead{padding:calc(var(--nav-h) + 54px) 0 10px;background:var(--ink);color:var(--paper)}
+.phead{padding:calc(var(--nav-h) + 54px) 0 56px;background:var(--ink);color:var(--paper)}
 .phead .eyebrow{color:var(--brass-l)}
 .phead h1{font-family:var(--disp);font-weight:800;font-size:clamp(30px,5vw,52px);margin:6px 0 0;letter-spacing:-.02em}
 .phead p{color:rgba(244,236,221,.8);max-width:54ch;margin:14px 0 0}
 .phead .lat-bg{position:absolute;inset:0;opacity:.06;pointer-events:none}
 .phead-wrap{position:relative;overflow:hidden}
-.gwrap{padding:42px 0 84px}
+.gwrap{padding:34px 0 84px}
 .gmasonry{columns:4;column-gap:16px}
 @media(max-width:1100px){.gmasonry{columns:3}}
 @media(max-width:760px){.gmasonry{columns:2;column-gap:12px}}
@@ -48,6 +48,8 @@ html.loader-on #yw-pre{display:flex}
 .gtile:hover .cap{opacity:1;transform:none}
 .gtile:focus-visible{outline:2px solid var(--brass-l);outline-offset:2px}
 .gempty{color:var(--ink-55);padding:70px 0;text-align:center}
+.gsec + .gsec{margin-top:clamp(40px,6vh,60px)}
+.gsl{margin-bottom:24px}
 .glb{position:fixed;inset:0;z-index:120;background:rgba(8,7,5,.93);display:none;align-items:center;justify-content:center;padding:24px}
 .glb.open{display:flex}
 .glb img{max-width:92vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow:0 30px 80px rgba(0,0,0,.55)}
@@ -115,7 +117,7 @@ html.loader-on #yw-pre{display:flex}
 <h1 data-en="Moments on stage" data-zh="舞台上的時刻">Moments on stage</h1>
 <p data-en="A look back through our performances, workshops and community gatherings." data-zh="回顧我們的演出、工作坊與社區活動的點滴。">A look back through our performances, workshops and community gatherings.</p>
 </div></header>
-<div class="wrap gwrap"><div class="gmasonry" id="gmasonry"></div></div>
+<div class="wrap gwrap"><div id="gallerySections"></div></div>
 <div class="glb" id="glb">
 <button class="gx" id="glbx" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 <button class="gnav gprev" id="glbprev" aria-label="Previous"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -160,10 +162,20 @@ let GAL=[], CURITEMS=[], LBI=0;
 function Lf(o,b){return LANG==="zh"?(o[b+"_zh"]||o[b+"_en"]||""):(o[b+"_en"]||o[b+"_zh"]||"");}
 function capOf(g){const t=YW.plain(Lf(g,"title")),i=YW.plain(Lf(g,"info"));return [t,i].filter(Boolean).join(" \u2014 ");}
 window.render=function(){
- const host=document.getElementById("gmasonry");
- CURITEMS=(GAL||[]).filter(g=>g.image);
- if(!CURITEMS.length){host.innerHTML='<p class="gempty">'+(LANG==="zh"?"\u82b1\u7d6e\u5373\u5c07\u4e0a\u8f09\u3002":"Photos coming soon.")+'</p>';return;}
- host.innerHTML=CURITEMS.map((g,i)=>{const cap=capOf(g);return '<a class="gtile" data-i="'+i+'" role="button" tabindex="0">'+'<img src="'+YW.esc(g.image)+'" alt="'+YW.esc(cap)+'" loading="lazy">'+(cap?'<div class="cap">'+YW.esc(cap)+'</div>':'')+'</a>';}).join("");
+ const host=document.getElementById("gallerySections");
+ const all=(GAL||[]).filter(g=>g.image);
+ CURITEMS=[];
+ if(!all.length){host.innerHTML='<p class="gempty">'+(LANG==="zh"?"花絮即將上載。":"Photos coming soon.")+'</p>';return;}
+ const order=[],map={};
+ all.forEach(g=>{const key=String(g.section_en||g.section_zh||"").trim();if(!(key in map)){map[key]=[];order.push(key);}map[key].push(g);});
+ host.innerHTML=order.map(key=>{
+  const items=map[key],first=items[0];
+  const label=key?(LANG==="zh"?(first.section_zh||first.section_en):(first.section_en||first.section_zh)):"";
+  const sub=key?(LANG==="zh"?(first.section_en||""):(first.section_zh||"")):"";
+  const head=label?'<div class="slabel gsl"><h2>'+YW.esc(label)+'</h2><span class="ln"></span>'+(sub&&sub!==label?'<span class="sub">'+YW.esc(sub)+'</span>':'')+'</div>':"";
+  const tiles=items.map(g=>{const idx=CURITEMS.length;CURITEMS.push(g);const cap=capOf(g);return '<a class="gtile" data-i="'+idx+'" role="button" tabindex="0"><img src="'+YW.esc(g.image)+'" alt="'+YW.esc(cap)+'" loading="lazy">'+(cap?'<div class="cap">'+YW.esc(cap)+'</div>':'')+'</a>';}).join("");
+  return '<section class="gsec">'+head+'<div class="gmasonry">'+tiles+'</div></section>';
+ }).join("");
  host.querySelectorAll(".gtile").forEach(t=>{t.onclick=()=>openLb(+t.dataset.i);t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLb(+t.dataset.i);}};});
 };
 function openLb(i){LBI=i;showLb();document.getElementById("glb").classList.add("open");}

@@ -31,6 +31,15 @@ html.loader-on #yw-pre{display:flex}
 <link rel="stylesheet" href="/assets/styles.css">
 <style>
 .hero .inner .btns{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+.hero-ctrl{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:46px;height:46px;border-radius:50%;border:1px solid rgba(244,236,221,.35);background:rgba(12,10,7,.32);color:var(--paper);cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(4px);transition:background .2s,border-color .2s}
+.hero-ctrl:hover{background:rgba(12,10,7,.62);border-color:var(--paper)}
+.hero-ctrl svg{width:22px;height:22px}
+.hero-ctrl.hprev{left:clamp(12px,3vw,28px)}
+.hero-ctrl.hnext{right:clamp(12px,3vw,28px)}
+.hero-dots{position:absolute;left:0;right:0;bottom:clamp(14px,2.4vh,22px);z-index:5;display:flex;gap:9px;justify-content:center}
+.hero-dots button{width:9px;height:9px;border-radius:50%;border:none;padding:0;background:rgba(244,236,221,.42);cursor:pointer;transition:background .2s,transform .2s}
+.hero-dots button.on{background:var(--paper);transform:scale(1.25)}
+@media(max-width:600px){.hero-ctrl{width:40px;height:40px}.hero-ctrl svg{width:20px;height:20px}}
 .sec{padding:clamp(56px,8vh,84px) 0}
 .sec.alt{background:var(--mist)}
 .supp{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
@@ -229,6 +238,29 @@ function renderEvents(host,status){
  const items=DATA.events.filter(e=>(String(e.status||"").toLowerCase()||(YW.isPast(e)?"past":"upcoming"))===status);
  host.innerHTML=items.length?'<div class="ev-grid '+gridClass(items.length)+'">'+items.map(eCard).join("")+'</div>':'<p style="color:var(--ink-55)">'+(status==="upcoming"?(LANG==="zh"?"暫無即將舉行的活動，請稍後再來。":"No upcoming events just yet — please check back soon."):(LANG==="zh"?"暫無過往活動記錄。":"No past events recorded yet."))+'</p>';
 }
+let HIDX=0;
+function setupHero(n){
+ const hero=document.getElementById("hero");
+ hero.querySelectorAll(".hero-ctrl,.hero-dots").forEach(e=>e.remove());
+ clearInterval(window._hero); HIDX=0;
+ if(n<=1) return;
+ const slides=()=>hero.querySelectorAll("#heroSlides .slide");
+ const dots=document.createElement("div"); dots.className="hero-dots";
+ function goHero(idx,user){
+  const els=slides(); if(!els.length) return;
+  if(els[HIDX]) els[HIDX].classList.remove("on");
+  HIDX=((idx%els.length)+els.length)%els.length;
+  els[HIDX].classList.add("on");
+  dots.querySelectorAll("button").forEach((d,j)=>d.classList.toggle("on",j===HIDX));
+  if(user){ clearInterval(window._hero); window._hero=setInterval(()=>goHero(HIDX+1,false),5500); }
+ }
+ const mk=(cls,lab,path,d)=>{const b=document.createElement("button");b.className="hero-ctrl "+cls;b.setAttribute("aria-label",lab);b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="'+path+'"/></svg>';b.onclick=()=>goHero(HIDX+d,true);return b;};
+ const prev=mk("hprev","Previous slide","M15 6l-6 6 6 6",-1);
+ const next=mk("hnext","Next slide","M9 6l6 6-6 6",1);
+ for(let k=0;k<n;k++){const b=document.createElement("button");b.setAttribute("aria-label","Go to slide "+(k+1));if(k===0)b.classList.add("on");b.onclick=()=>goHero(k,true);dots.appendChild(b);}
+ hero.appendChild(prev); hero.appendChild(next); hero.appendChild(dots);
+ window._hero=setInterval(()=>goHero(HIDX+1,false),5500);
+}
 function renderHero(){
  const slides=(DATA.hero&&DATA.hero.length?DATA.hero:FALLBACK_HERO);
  document.getElementById("heroSlides").innerHTML=slides.map((s,i)=>{
@@ -239,7 +271,7 @@ function renderHero(){
    '<h1>'+YW.rich(Lf(s,"title"))+'</h1>'+
    (Lf(s,"sub")?'<p class="sub">'+YW.rich(Lf(s,"sub"))+'</p>':'')+cta+'</div></div></div>';
  }).join("");
- if(slides.length>1){let i=0;clearInterval(window._hero);window._hero=setInterval(()=>{const els=document.querySelectorAll("#heroSlides .slide");els[i].classList.remove("on");i=(i+1)%els.length;els[i].classList.add("on");},5500);}
+ setupHero(slides.length);
 }
 function renderGallery(){
  const host=document.getElementById("gallery");const items=(DATA.gallery||[]).slice(0,5);

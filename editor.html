@@ -64,6 +64,8 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .pane{display:none}
 .pane.show{display:block}
 .pane>.sec-wrap:first-child{padding-top:24px}
+.gal .t{position:relative}
+.gsecchip{position:absolute;top:6px;left:6px;background:rgba(22,19,15,.82);color:#fff;font-family:var(--grot);font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
 .addbtn{font-family:var(--grot);font-size:13.5px;font-weight:600;color:var(--vermilion-d);background:#fff;border:1.5px dashed var(--vermilion);border-radius:12px;padding:12px 18px;cursor:pointer;margin-top:16px}
 .addbtn:hover{background:#fbeae6}
 .postlist{display:flex;flex-direction:column;gap:12px}
@@ -391,6 +393,7 @@ const SCHEMA = {
       {k:"image",t:"img",label:"Image"},
       {k:"title",t:"bi",rich:true,label:"Title"},
       {k:"info",t:"bitext",label:"Info / caption"},
+      {k:"section",t:"bi",label:"Section / album (optional) — group photos that belong together (e.g. \u2018Spring Concert 2025\u2019). Same section name = one group on the Gallery page."},
     ]},
   hero:{ tab:"Hero",
     fields:[
@@ -529,12 +532,13 @@ function renderHero(host){
 
 function galCard(g,i,big){
   const img=g.image?`<img src="${E(g.image)}" alt="">`:`<div class="ph">${YW.lat()}</div>`;
-  return `<div class="ed ${big?'big':''} ${i>=5?'extra':''}" data-tab="gallery" data-i="${i}">${tools("gallery",i)}<div class="t">${img}</div></div>`;
+  const sec=(g.section_en||g.section_zh)?`<span class="gsecchip">${E(YW.plain(Lf(g,"section")))}</span>`:"";
+  return `<div class="ed ${big?'big':''} ${i>=5?'extra':''}" data-tab="gallery" data-i="${i}">${tools("gallery",i)}<div class="t">${img}${sec}</div></div>`;
 }
 function renderGallery(host){
   const items=DATA.gallery;
   host.innerHTML = items.length
-    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`+(items.length>5?`<p class="hint">First 5 show on the homepage; all photos appear on the Gallery page. Reorder to choose the homepage 5.</p>`:"")
+    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`+(items.length>5?`<p class="hint">First 5 (by order) show on the homepage; all photos appear on the Gallery page. Give photos a Section to group them into albums.</p>`:"")
     : `<p class="hint">No gallery photos yet.</p>`;
 }
 
