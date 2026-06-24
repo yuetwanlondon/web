@@ -534,7 +534,7 @@ function galCard(g,i,big){
 function renderGallery(host){
   const items=DATA.gallery;
   host.innerHTML = items.length
-    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`+(items.length>5?`<p class="hint">Only the first 5 show on the homepage — reorder (or delete) to choose which.</p>`:"")
+    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`+(items.length>5?`<p class="hint">First 5 show on the homepage; all photos appear on the Gallery page. Reorder to choose the homepage 5.</p>`:"")
     : `<p class="hint">No gallery photos yet.</p>`;
 }
 
@@ -847,7 +847,7 @@ async function galleryBulk(fileList){
       const o={}; SCHEMA.gallery.fields.forEach(fl=>{ if(fl.t==="bi"||fl.t==="bitext"){o[fl.k+"_en"]="";o[fl.k+"_zh"]="";} else o[fl.k]=""; });
       o.id="gall-"+Date.now().toString(36)+n.toString(36);
       o.order=++baseOrder;
-      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:"gallery/"+o.id});
+      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:"gallery"});
       if(!res||!res.ok||!res.url) throw new Error(res&&res.error||"upload failed");
       o.image=res.url; DATA.gallery.push(o); ok++;
     }catch(e){ fail++; }
@@ -895,7 +895,7 @@ function curItemId(){
   id=String(id||"").replace(/[^a-zA-Z0-9_-]/g,"");
   return id||"misc";
 }
-function uploadFolder(){ return EDIT.tab+"/"+curItemId(); }
+function uploadFolder(){ return EDIT.tab==="gallery" ? "gallery" : EDIT.tab+"/"+curItemId(); }
 
 /* ---------- client-side image compression (shrinks before upload to save Drive space) ---------- */
 const IMG_MAX_EDGE = 2000;                 // longest side in px — plenty sharp for hero / full-bleed
