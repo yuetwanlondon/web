@@ -56,6 +56,14 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 
 .sec-wrap{padding:42px 0 0}
 .sec-wrap.first{padding-top:26px}
+.enav{position:sticky;top:calc(54px + env(safe-area-inset-top));z-index:55;display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:12px 0 11px;margin:0 0 2px;background:var(--mist);scrollbar-width:none;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line)}
+.enav::-webkit-scrollbar{display:none}
+.enav button{flex:none;font-family:var(--grot);font-size:13.5px;font-weight:600;color:var(--ink-70,#5f574d);background:#fff;border:1px solid var(--line);border-radius:30px;padding:9px 15px;cursor:pointer;transition:background .15s,color .15s,border-color .15s;line-height:1}
+.enav button:hover{border-color:var(--ink-55)}
+.enav button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pane{display:none}
+.pane.show{display:block}
+.pane>.sec-wrap:first-child{padding-top:24px}
 .addbtn{font-family:var(--grot);font-size:13.5px;font-weight:600;color:var(--vermilion-d);background:#fff;border:1.5px dashed var(--vermilion);border-radius:12px;padding:12px 18px;cursor:pointer;margin-top:16px}
 .addbtn:hover{background:#fbeae6}
 .postlist{display:flex;flex-direction:column;gap:12px}
@@ -244,7 +252,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 }
 
 /* ---- rich-text field + formatting toolbar ---- */
-#s_about .rtbar{top:calc(54px + env(safe-area-inset-top) + 6px)}
+#s_about .rtbar{top:calc(54px + env(safe-area-inset-top) + 64px)}
 .rich{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;font-family:var(--grot);line-height:1.55;box-sizing:border-box;background:#fff;overflow-wrap:anywhere}
 .rich:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .rich:empty:before{content:attr(data-ph);color:var(--ink-55);pointer-events:none}
@@ -360,6 +368,7 @@ const SCHEMA = {
       {k:"bring",t:"bitext",rich:true,label:"What to bring — one per line"},
       {k:"image",t:"img",label:"Main image / poster"},
       {k:"banner",t:"img",label:"Banner image — wide header on the event page (optional; falls back to the main image). Best wide, e.g. 1600×600."},
+      {k:"banner_mobile",t:"img",label:"Mobile banner — taller crop for phones (optional; falls back to the banner). Best portrait/square, e.g. 1080×1350."},
       {k:"gallery",t:"imgs",label:"Event gallery — one image per line"},
       {k:"link",t:"text",label:"Ticket link (blank = email enquiry)"},
     ]},
@@ -626,27 +635,52 @@ function renderSettings(host){
 }
 
 /* ---------- master render ---------- */
+const PANES=["hero","events","gallery","people","learn","news","about","social","settings"];
+let ACTIVE_PANE=(function(){ try{ var v=sessionStorage.getItem("yw_pane"); return PANES.indexOf(v)>=0?v:"events"; }catch(e){ return "events"; } })();
+function showPane(name){
+  if(PANES.indexOf(name)<0) name="events";
+  ACTIVE_PANE=name;
+  try{ sessionStorage.setItem("yw_pane",name); }catch(e){}
+  document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("show", p.dataset.pane===name); });
+  document.querySelectorAll("#enav button").forEach(function(b){ b.classList.toggle("on", b.dataset.go===name); });
+  var btn=document.querySelector('#enav button[data-go="'+name+'"]');
+  if(btn){ try{ btn.scrollIntoView({inline:"center",block:"nearest"}); }catch(e){} }
+  try{ window.scrollTo(0,0); }catch(e){}
+}
 function renderAll(){
   $("langItemTxt").textContent = LANG==="en" ? "中文 preview" : "EN preview";
   $("canvas").innerHTML=`
-    <div class="sec-wrap first"><div class="slabel"><h2>Hero</h2><span class="ln"></span><span class="sub">首頁橫幅</span></div><div id="s_hero"></div><button class="addbtn" data-add="hero">+ Add hero slide</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>What's On</h2><span class="ln"></span><span class="sub">即將舉行</span></div><div id="s_up"></div><button class="addbtn" data-add="events" data-status="upcoming">+ Add event</button></div>
+    <nav class="enav" id="enav"><button data-go="hero">Hero</button><button data-go="events">Events</button><button data-go="gallery">Gallery</button><button data-go="people">People</button><button data-go="learn">Learn</button><button data-go="news">News</button><button data-go="about">About</button><button data-go="social">Social</button><button data-go="settings">Settings</button></nav>
+    <div class="pane" data-pane="hero"><div class="sec-wrap first"><div class="slabel"><h2>Hero</h2><span class="ln"></span><span class="sub">首頁橫幅</span></div><div id="s_hero"></div><button class="addbtn" data-add="hero">+ Add hero slide</button></div>
+    </div>
+    <div class="pane" data-pane="events"><div class="sec-wrap"><div class="slabel"><h2>What's On</h2><span class="ln"></span><span class="sub">即將舉行</span></div><div id="s_up"></div><button class="addbtn" data-add="events" data-status="upcoming">+ Add event</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Past Events</h2><span class="ln"></span><span class="sub">過往活動</span></div><div id="s_past"></div><button class="addbtn" data-add="events" data-status="past">+ Add past event</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Gallery</h2><span class="ln"></span><span class="sub">花絮 · up to 5</span></div><div id="s_gal"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="gallery" style="margin-top:0">+ Add photo</button><span class="addbtn filebtn" style="margin-top:0;border-style:solid">+ Bulk upload<input type="file" accept="image/*" multiple id="galBulkInput"></span></div></div>
-    <div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="learn" style="margin-top:0">+ Add article</button><button class="addbtn" data-import="learn" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
-    <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="news" style="margin-top:0">+ Add news post</button><button class="addbtn" data-import="news" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
-    <div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
+    </div>
+    <div class="pane" data-pane="gallery"><div class="sec-wrap"><div class="slabel"><h2>Gallery</h2><span class="ln"></span><span class="sub">花絮 · up to 5</span></div><div id="s_gal"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="gallery" style="margin-top:0">+ Add photo</button><span class="addbtn filebtn" style="margin-top:0;border-style:solid">+ Bulk upload<input type="file" accept="image/*" multiple id="galBulkInput"></span></div></div>
+    </div>
+    <div class="pane" data-pane="people"><div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
+    </div>
+    <div class="pane" data-pane="learn"><div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="learn" style="margin-top:0">+ Add article</button><button class="addbtn" data-import="learn" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
+    </div>
+    <div class="pane" data-pane="news"><div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="news" style="margin-top:0">+ Add news post</button><button class="addbtn" data-import="news" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
+    </div>
+    <div class="pane" data-pane="about"><div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
+    </div>
+    <div class="pane" data-pane="social"><div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
+    </div>
+    <div class="pane" data-pane="settings"><div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
+    </div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
   renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set"));
+  showPane(ACTIVE_PANE);
 }
 
 /* ---------- canvas actions ---------- */
 document.addEventListener("change",e=>{ if(e.target&&e.target.id==="galBulkInput"){ const fs=e.target.files; e.target.value=""; galleryBulk(fs); } });
 $("canvas") && document.addEventListener("click",e=>{
+  const go=e.target.closest("[data-go]");
+  if(go){ showPane(go.dataset.go); return; }
   const add=e.target.closest("[data-add]");
   if(add){ addNew(add.dataset.add, add.dataset.status); return; }
   const imp=e.target.closest("[data-import]");
