@@ -1,25 +1,20 @@
 name: Publish data snapshot
-
 # Refreshes data.json from the Google Sheet AND deploys the site to Pages.
 # Runs alongside the auto-created "static.yml" (which deploys on your own pushes).
-
 on:
   workflow_dispatch:                 # manual "Run workflow" button
   repository_dispatch:               # fired by the editor's "Publish now" button
     types: [rebuild]
   schedule:
     - cron: '*/10 * * * *'           # auto-refresh roughly every 10 minutes
-
 permissions:
   contents: write                    # to commit the refreshed data.json
   pages: write                       # to deploy to Pages
   id-token: write                    # required by deploy-pages
-
 # Share the same lock as static.yml so the two never deploy at the same time.
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -29,26 +24,65 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch latest data from the Google Sheet
+      # ----------------------------------------------------------------------
+      # IMPORTANT: this must be the *currently active* Web app /exec URL.
+      # Apps Script > Deploy > Manage deployments > (Web app) > copy "Web app URL".
+      # If you ever used "New deployment" instead of editing the existing one,
+      # Google made a NEW url and you must paste it below.
+      # Required settings on that deployment:  Execute as = Me ,  Who has access = Anyone
+      # ----------------------------------------------------------------------
+      - name: Fetch latest data from the Google Sheet (non-fatal)
         env:
           APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyUoOwvu32QbKPaLIueyJFFSqft0b7qoASYEImHE3Mj-kRBxphaLbm1yyuXigFfiDKDrw/exec"
         run: |
-          set -e
-          curl -fsSL "$APPS_SCRIPT_URL" -o data.json
-          # Make sure we got the real payload, not a Google error/login page.
-          python3 - <<'PY'
-          import json
-          d = json.load(open("data.json"))
-          assert d.get("ok") is True, "payload missing ok:true — check the web app deployment"
-          print("events:", len(d.get("events", [])), "people:", len(d.get("people", [])),
+          set +e
+          echo "Requesting data from Apps Script…"
+          code=$(curl -sSL --max-time 60 -o data.fetched.json -w "%{http_code}" "$APPS_SCRIPT_URL")
+          echo "HTTP status from Apps Script: $code"
+
+          ok=0
+          if [ "$code" = "200" ]; then
+            python3 - <<'PY'
+          import json, sys
+          try:
+              d = json.load(open("data.fetched.json"))
+          except Exception as e:
+              print("::error::Response was not JSON (most likely a Google login / permission / error page).")
+              print("First 300 chars of what we received:")
+              print(open("data.fetched.json", encoding="utf-8", errors="replace").read()[:300])
+              sys.exit(1)
+          if d.get("ok") is not True:
+              print("::error::JSON received but missing ok:true — check the doGet payload.")
+              sys.exit(1)
+          print("OK — events:", len(d.get("events", [])), "people:", len(d.get("people", [])),
                 "gallery:", len(d.get("gallery", [])), "hero:", len(d.get("hero", [])))
           PY
+            [ $? -eq 0 ] && ok=1
+          else
+            echo "::error::Apps Script did not return 200 (got $code)."
+            echo "  404 = the /exec URL above is stale (a new deployment was created) — paste the current one."
+            echo "  401/403 = 'Who has access' is not set to Anyone."
+          fi
+
+          if [ "$ok" = "1" ]; then
+            mv -f data.fetched.json data.json
+            echo "data.json refreshed from the Sheet."
+          else
+            rm -f data.fetched.json
+            if [ -f data.json ]; then
+              echo "::warning::Could not refresh data — keeping the existing data.json and deploying anyway."
+            else
+              echo "::warning::Could not refresh data and no existing data.json is present; deploying without it."
+            fi
+          fi
+          # Never fail the job on a data hiccup — the site should still deploy.
+          exit 0
 
       - name: Commit data.json if it changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          if [ -f data.json ]; then git add data.json; fi
           if git diff --staged --quiet; then
             echo "No data change."
           else
