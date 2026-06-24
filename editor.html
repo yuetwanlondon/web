@@ -85,6 +85,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .ed-tools button svg{width:16px;height:16px}
 .ev-grid>.ed>.ecard{height:100%}
 .gal>.ed{position:relative}
+.gal>.ed.extra{opacity:.5}
 .gal>.ed.big{grid-column:span 2;grid-row:span 2}
 .gal>.ed>.t{position:absolute;inset:0}
 /* touch devices can't hover — keep the tools on screen so they're reachable */
@@ -506,12 +507,12 @@ function renderHero(host){
 
 function galCard(g,i,big){
   const img=g.image?`<img src="${E(g.image)}" alt="">`:`<div class="ph">${YW.lat()}</div>`;
-  return `<div class="ed ${big?'big':''}" data-tab="gallery" data-i="${i}">${tools("gallery",i)}<div class="t">${img}</div></div>`;
+  return `<div class="ed ${big?'big':''} ${i>=5?'extra':''}" data-tab="gallery" data-i="${i}">${tools("gallery",i)}<div class="t">${img}</div></div>`;
 }
 function renderGallery(host){
-  const items=DATA.gallery.slice(0,5);
+  const items=DATA.gallery;
   host.innerHTML = items.length
-    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`
+    ? `<div class="gal">${items.map((g,i)=>galCard(g,i,i===0)).join("")}</div>`+(items.length>5?`<p class="hint">Only the first 5 show on the homepage — reorder (or delete) to choose which.</p>`:"")
     : `<p class="hint">No gallery photos yet.</p>`;
 }
 
@@ -618,10 +619,10 @@ function renderAll(){
     <div class="sec-wrap first"><div class="slabel"><h2>Hero</h2><span class="ln"></span><span class="sub">首頁橫幅</span></div><div id="s_hero"></div><button class="addbtn" data-add="hero">+ Add hero slide</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>What's On</h2><span class="ln"></span><span class="sub">即將舉行</span></div><div id="s_up"></div><button class="addbtn" data-add="events" data-status="upcoming">+ Add event</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Past Events</h2><span class="ln"></span><span class="sub">過往活動</span></div><div id="s_past"></div><button class="addbtn" data-add="events" data-status="past">+ Add past event</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Gallery</h2><span class="ln"></span><span class="sub">花絮 · up to 5</span></div><div id="s_gal"></div><button class="addbtn" data-add="gallery">+ Add photo</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>Gallery</h2><span class="ln"></span><span class="sub">花絮 · up to 5</span></div><div id="s_gal"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="gallery" style="margin-top:0">+ Add photo</button><span class="addbtn filebtn" style="margin-top:0;border-style:solid">+ Bulk upload<input type="file" accept="image/*" multiple id="galBulkInput"></span></div></div>
     <div class="sec-wrap"><div class="slabel"><h2>People</h2><span class="ln"></span><span class="sub">我們的團隊</span></div><div id="s_ppl"></div><button class="addbtn" data-add="people">+ Add person</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><button class="addbtn" data-add="learn">+ Add article</button></div>
-    <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><button class="addbtn" data-add="news">+ Add news post</button></div>
+    <div class="sec-wrap"><div class="slabel"><h2>Learn</h2><span class="ln"></span><span class="sub">認識粵劇 · blog</span></div><div id="s_learn"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="learn" style="margin-top:0">+ Add article</button><button class="addbtn" data-import="learn" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
+    <div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="news" style="margin-top:0">+ Add news post</button><button class="addbtn" data-import="news" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
     <div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
     <div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
     <div class="sec-wrap"><div class="slabel"><h2>Settings</h2><span class="ln"></span><span class="sub">網站設定</span></div><div id="s_set"></div></div>
@@ -631,9 +632,12 @@ function renderAll(){
 }
 
 /* ---------- canvas actions ---------- */
+document.addEventListener("change",e=>{ if(e.target&&e.target.id==="galBulkInput"){ const fs=e.target.files; e.target.value=""; galleryBulk(fs); } });
 $("canvas") && document.addEventListener("click",e=>{
   const add=e.target.closest("[data-add]");
   if(add){ addNew(add.dataset.add, add.dataset.status); return; }
+  const imp=e.target.closest("[data-import]");
+  if(imp){ importFromDoc(imp.dataset.import); return; }
   const btn=e.target.closest(".ed-tools button"); if(!btn) return;
   const ed=btn.closest(".ed"); const tab=ed.dataset.tab, i=+ed.dataset.i, op=btn.dataset.op;
   if(op==="edit") openDrawer(tab,i);
@@ -781,6 +785,45 @@ function richClear(){
   box.querySelectorAll("*").forEach(el=>{ if(el.tagName==="BR") return; while(el.firstChild) el.parentNode.insertBefore(el.firstChild,el); el.parentNode.removeChild(el); });
   const frag=document.createDocumentFragment(); while(box.firstChild) frag.appendChild(box.firstChild);
   c.range.insertNode(frag);
+}
+
+/* ---------- bulk-add photos to the Gallery (one item per image) ---------- */
+async function galleryBulk(fileList){
+  const files=Array.prototype.slice.call(fileList||[]); if(!files.length) return;
+  busy(true); let ok=0, fail=0;
+  let baseOrder=DATA.gallery.reduce((m,r)=>Math.max(m,+r.order||0),0);
+  for(let n=0;n<files.length;n++){
+    const f=files[n];
+    if(files.length>1) toast(`Uploading ${n+1} of ${files.length}…`);
+    try{
+      const img=await compressImage(f);
+      const o={}; SCHEMA.gallery.fields.forEach(fl=>{ if(fl.t==="bi"||fl.t==="bitext"){o[fl.k+"_en"]="";o[fl.k+"_zh"]="";} else o[fl.k]=""; });
+      o.id="gall-"+Date.now().toString(36)+n.toString(36);
+      o.order=++baseOrder;
+      const res=await YW.post({action:"upload",pass:AUTH.pass,filename:img.name,mimeType:img.type,data:img.data,folder:"gallery/"+o.id});
+      if(!res||!res.ok||!res.url) throw new Error(res&&res.error||"upload failed");
+      o.image=res.url; DATA.gallery.push(o); ok++;
+    }catch(e){ fail++; }
+  }
+  IMG_CACHE={}; mark("gallery"); renderAll(); busy(false);
+  toast(fail ? `Added ${ok} photo${ok!==1?"s":""}, ${fail} failed — press Save` : `Added ${ok} photo${ok!==1?"s":""} — press Save`);
+}
+
+/* ---------- import a Google Doc (EN + 中文 tabs) as a Learn/News post ---------- */
+async function importFromDoc(section){
+  const url=prompt("Paste the Google Doc link.\n\nThe Doc should have two tabs titled EN and 中文, each starting with Title: / Summary: / Date: / Status: lines, then the article.");
+  if(!url) return;
+  busy(true);
+  try{
+    const res=await YW.post({action:"import",pass:AUTH.pass,url:url,section:section});
+    if(!res||!res.ok||!res.post) throw new Error(res&&res.error||"import failed");
+    const post=res.post;
+    post.order=DATA[section].reduce((m,r)=>Math.max(m,+r.order||0),0)+1;
+    DATA[section].push(post);
+    mark(section); renderAll(); busy(false);
+    toast("Imported — review it below, then Save & Publish.");
+    openDrawer(section, DATA[section].length-1);
+  }catch(e){ busy(false); alert("Import failed: "+e.message); }
 }
 
 /* ---------- per-item Drive folder: uploads go to "<section>/<id>" ---------- */

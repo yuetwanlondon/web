@@ -27,7 +27,7 @@ window.YW = (function(){
     var src=String(html);
     if(src.indexOf("<")<0 && src.indexOf("&")<0) return esc(src);
     var box=document.createElement("div"); box.innerHTML=src;
-    var ALLOW={STRONG:"STRONG",B:"STRONG",EM:"EM",I:"EM",SPAN:"SPAN",BR:"BR"};
+    var ALLOW={STRONG:"STRONG",B:"STRONG",EM:"EM",I:"EM",SPAN:"SPAN",BR:"BR",A:"A"};
     function cstyle(st){
       var out=[];
       String(st||"").split(";").forEach(function(d){
@@ -57,8 +57,15 @@ window.YW = (function(){
           par.removeChild(c);
           continue;
         }
-        var name=ALLOW[tag], rep=document.createElement(name);
+        var name=ALLOW[tag];
+        var href2;
+        if(name==="A"){
+          href2=String(c.getAttribute("href")||"");
+          if(!/^(https?:|mailto:)/i.test(href2)){ walk(c); var pa=c.parentNode; while(c.firstChild) pa.insertBefore(c.firstChild,c); pa.removeChild(c); continue; }
+        }
+        var rep=document.createElement(name);
         if(name==="SPAN"){ var cs=cstyle(c.getAttribute("style")); if(cs) rep.setAttribute("style",cs); }
+        else if(name==="A"){ rep.setAttribute("href",href2); rep.setAttribute("target","_blank"); rep.setAttribute("rel","noopener noreferrer"); }
         while(c.firstChild) rep.appendChild(c.firstChild);
         c.parentNode.replaceChild(rep,c);
         walk(rep);
