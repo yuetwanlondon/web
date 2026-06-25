@@ -131,7 +131,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 /* ---- edit drawer (right panel on desktop, bottom sheet on mobile) ---- */
 .dscrim{position:fixed;inset:0;background:rgba(22,19,15,.42);z-index:70;opacity:0;pointer-events:none;transition:.2s;touch-action:none}
 .dscrim.open{opacity:1;pointer-events:auto}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,92vw);background:#fff;z-index:71;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.2)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(600px,94vw);background:#fff;z-index:71;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.2)}
 .drawer.open{transform:none}
 .drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
 .drawer .dh h3{font-family:var(--disp);font-size:17px;margin:0;font-weight:800}
@@ -146,7 +146,7 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .fld textarea{min-height:84px;resize:vertical;line-height:1.55}
 .fld .cjk-in{font-family:var(--cjk)}
-.bi{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bi{display:grid;grid-template-columns:1fr;gap:14px}
 .bi .t{font-size:10px;color:var(--ink-55);margin-bottom:4px;font-weight:600;letter-spacing:.03em}
 .chk{display:flex;align-items:center;gap:10px;font-size:14.5px}.chk input{width:20px;height:20px}
 .imgbox{display:flex;gap:13px}
@@ -256,6 +256,8 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 /* ---- rich-text field + formatting toolbar ---- */
 #s_about .rtbar{top:calc(54px + env(safe-area-inset-top) + 64px)}
 .rich{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:16px;font-family:var(--grot);line-height:1.55;box-sizing:border-box;background:#fff;overflow-wrap:anywhere}
+#f_body_en,#f_body_zh{min-height:180px}
+#f_summary_en,#f_summary_zh{min-height:84px}
 .rich:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.16)}
 .rich:empty:before{content:attr(data-ph);color:var(--ink-55);pointer-events:none}
 .rich.cjk-in{font-family:var(--cjk)}
@@ -753,7 +755,7 @@ function fieldHTML(f,r){
 /* ---------- rich-text editor: bold / light / colour / highlight / line breaks ---------- */
 const RT_PH={en:"Type here\u2026",zh:"\u8f38\u5165\u6587\u5b57\u2026"};
 function toEditable(v){ var x=String(v==null?"":v); return x.indexOf("<")<0 ? E(x).replace(/\n/g,"<br>") : YW.rich(x); }
-function readRich(id){ var el=$(id); return el?YW.rich(el.innerHTML):""; }
+function readRich(id){ var el=$(id); if(!el) return ""; var h=el.innerHTML.replace(/<(div|p)[^>]*>/gi,"<br>").replace(/<\/(div|p)>/gi,"").replace(/^(\s*<br\s*\/?>\s*)+/i,"").replace(/(\s*<br\s*\/?>\s*)+$/i,""); return YW.rich(h); }
 function richField(id,html,cjk){ return '<div class="rich'+(cjk?' cjk-in':'')+'" id="'+id+'" contenteditable="true" data-ph="'+(cjk?RT_PH.zh:RT_PH.en)+'">'+html+'</div>'; }
 const IC_BOLD='<svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7.5a3.5 3.5 0 0 1 0 7H7z"/></svg>';
 const IC_LIGHT='<svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><path d="M16 8 2 22M17.5 15H9"/></svg>';
@@ -786,7 +788,7 @@ function wireRichBar(scope){
     ed.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); document.execCommand("insertLineBreak"); }});
   });
   const bar=scope.querySelector(".rtbar"); if(!bar) return;
-  bar.addEventListener("mousedown",e=>{
+  bar.addEventListener("pointerdown",e=>{
     const b=e.target.closest("button"); if(!b) return;
     e.preventDefault();                       // keep the editor's text selection
     const ed=RICH_ACTIVE; if(!ed) return;
@@ -880,12 +882,30 @@ function openDocPicker(section){
     list.querySelectorAll(".docrow").forEach(b=>b.onclick=()=>{ closeDocPicker(); importDocById(DOCPICK_SECTION, b.dataset.id); });
   }).catch(err=>{ list.innerHTML='<div class="pickempty">Could not load Docs.<br><small>'+E(String(err.message||err))+'</small></div>'; });
 }
+function deriveSummary(bodyHtml, maxLatin, maxCJK){
+  if(!bodyHtml) return "";
+  var lines=YW.richLines(bodyHtml), para="", fallback="";
+  for(var i=0;i<lines.length;i++){
+    if(/^\s*<table/i.test(lines[i])) continue;
+    var t=YW.plain(lines[i]); if(!t) continue;
+    if(!fallback) fallback=t;
+    if(/^<strong>[^<]*<\/strong>$/i.test(lines[i].trim())) continue;
+    para=t; break;
+  }
+  if(!para) para=fallback;
+  if(!para) return "";
+  var cjk=/[\u4e00-\u9fff]/.test(para), max=cjk?maxCJK:maxLatin;
+  if(para.length>max){ para=para.slice(0,max); if(!cjk) para=para.replace(/\s+\S*$/,""); para=para.replace(/[\s,;:.!?\uFF0C\uFF1B\uFF1A\u3002\uFF01\uFF1F\u3001]+$/,"")+"\u2026"; }
+  return para;
+}
 async function importDocById(section, docId){
   busy(true);
   try{
     const res=await YW.post({action:"import",pass:AUTH.pass,url:docId,section:section});
     if(!res||!res.ok||!res.post) throw new Error(res&&res.error||"import failed");
     const post=res.post;
+    if(!post.summary_en && post.body_en) post.summary_en=deriveSummary(post.body_en,180,90);
+    if(!post.summary_zh && post.body_zh) post.summary_zh=deriveSummary(post.body_zh,180,80);
     post.order=DATA[section].reduce((m,r)=>Math.max(m,+r.order||0),0)+1;
     DATA[section].push(post);
     mark(section); renderAll(); busy(false);
