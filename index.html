@@ -55,14 +55,20 @@ html.loader-on #yw-pre{display:flex}
 .news .eyebrow{color:var(--brass-l)}
 .news h2{font-family:var(--disp);font-weight:800;font-size:clamp(24px,3vw,32px);margin:4px 0 10px}
 .news p{color:rgba(244,236,221,.8);margin:0 0 22px}
-.news form{display:flex;gap:10px;max-width:440px;margin:0 auto}
-.news input{flex:1;border:1px solid var(--line-d);background:rgba(244,236,221,.08);color:var(--paper);border-radius:44px;padding:0 20px;height:52px;box-sizing:border-box;font-size:16px;font-family:var(--serif)}
-.news input::placeholder{color:rgba(244,236,221,.5)}
-.news input:focus{outline:none;border-color:var(--brass-l)}
+.news form{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto}
+.news .news-inputs{display:flex;gap:10px}
+.news .news-inputs input{flex:1;min-width:0}
+.news input[type=email],.news input[type=text]{border:1px solid var(--line-d);background:rgba(244,236,221,.08);color:var(--paper);border-radius:44px;padding:0 20px;height:52px;box-sizing:border-box;font-size:16px;font-family:var(--serif);width:100%}
+.news input[type=email]::placeholder,.news input[type=text]::placeholder{color:rgba(244,236,221,.5)}
+.news input[type=email]:focus,.news input[type=text]:focus{outline:none;border-color:var(--brass-l)}
 .news .btn{height:52px}
+.news .consent{display:flex;align-items:flex-start;gap:9px;max-width:440px;margin:13px auto 0;text-align:left;cursor:pointer}
+.news .consent input{width:18px;height:18px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--brass-l);cursor:pointer}
+.news .consent span{color:rgba(244,236,221,.72);font-size:13px;line-height:1.5}
+.news .consent.err span{color:#e8836b}
 .news .ok{color:var(--brass-l);font-weight:600;margin-top:14px;display:none}
 .news .fine{color:rgba(244,236,221,.5);font-size:12.5px;margin-top:14px}
-@media(max-width:560px){.news form{flex-direction:column}.news input,.news .btn{width:100%;flex:0 0 auto;height:52px}}
+@media(max-width:560px){.news .news-inputs{flex-direction:column}}
 .slabel .seeall{font-family:var(--grot);font-size:14px;font-weight:600;color:var(--vermilion-d);text-decoration:none;white-space:nowrap}
 .slabel .seeall:hover{color:var(--vermilion)}
 .hnews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
@@ -173,9 +179,16 @@ html.loader-on #yw-pre{display:flex}
 <h2 data-en="Join our mailing list" data-zh="訂閱我們的通訊">Join our mailing list</h2>
 <p data-en="Be the first to hear about new performances, workshops and ticket releases." data-zh="第一時間獲悉最新演出、工作坊及購票資訊。">Be the first to hear about new performances, workshops and ticket releases.</p>
 <form id="newsForm" onsubmit="return false">
+<div class="news-inputs">
+<input type="text" id="newsName" data-en-ph="Your name (optional)" data-zh-ph="您的稱呼（可選）" placeholder="Your name (optional)">
 <input type="email" id="newsEmail" data-en-ph="Your email address" data-zh-ph="您的電郵地址" placeholder="Your email address" required>
+</div>
 <button class="btn btn-fill" id="newsBtn" data-en="Subscribe" data-zh="訂閱">Subscribe</button>
 </form>
+<label class="consent" id="newsConsent">
+<input type="checkbox" id="newsAgree">
+<span data-en="I agree to receive email newsletters from Yuet Wan London, and understand I can unsubscribe at any time." data-zh="我同意接收倫敦粵韻曲藝文化協會的電郵通訊，並明白可隨時取消訂閱。">I agree to receive email newsletters from Yuet Wan London, and understand I can unsubscribe at any time.</span>
+</label>
 <div class="ok" id="newsOk" data-en="Thank you for subscribing!" data-zh="多謝您的訂閱！">Thank you for subscribing!</div>
 <p class="fine" data-en="We'll only email you about our events. No spam, ever." data-zh="我們只會傳送活動相關電郵，絕不濫發。">We'll only email you about our events. No spam, ever.</p>
 </div></div>
@@ -303,11 +316,18 @@ document.getElementById("lb").onclick=e=>{if(e.target.id==="lb")document.getElem
 document.getElementById("newslat").innerHTML=YW.lat();
 document.getElementById("newsBtn").onclick=async function(){
  const em=document.getElementById("newsEmail");
+ const nm=document.getElementById("newsName");
+ const ag=document.getElementById("newsAgree");
+ const cs=document.getElementById("newsConsent");
  if(!em.value.trim()||em.value.indexOf("@")<1){em.style.borderColor="var(--vermilion)";return;}
- try{await YW.post({action:"subscribe",email:em.value});}catch(e){}
+ if(!ag.checked){cs.classList.add("err");return;}
+ const lang=(YW.loadLang&&YW.loadLang()==="zh")?"zh":"en";
+ try{await YW.post({action:"subscribe",email:em.value.trim(),name:nm.value.trim(),lang:lang,consent:true});}catch(e){}
  document.getElementById("newsForm").style.display="none";
+ cs.style.display="none";
  document.getElementById("newsOk").style.display="block";
 };
+document.getElementById("newsAgree").addEventListener("change",function(){document.getElementById("newsConsent").classList.remove("err");});
 (async function(){try{const j=await YW.fetchData();DATA.hero=j.hero||[];DATA.events=(j.events||[]);DATA.gallery=j.gallery||[];DATA.news=(j.news||[]);}catch(e){}render();if(window.__pre)window.__pre();})();
 
 </script></body></html>
