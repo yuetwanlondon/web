@@ -80,6 +80,26 @@ button,a,input,.ed-tools button{-webkit-tap-highlight-color:transparent}
 .dbadge{background:var(--vermilion);color:#fff;border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px;letter-spacing:.02em}
 .syncbadge{display:inline-flex;align-items:center;gap:4px;background:var(--brass,#B8893C);color:#fff;border:none;border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:600;margin-left:8px;cursor:pointer;font-family:var(--grot);letter-spacing:.02em}
 .syncbadge:hover{filter:brightness(1.08)}
+.nl-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.nl-banner{background:rgba(184,137,60,.12);border:1px solid rgba(184,137,60,.35);color:#6d563a;border-radius:10px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:18px}
+.nl-lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.02em;color:#6d655c;margin:16px 0 7px;text-transform:uppercase}
+.nl-in{width:100%;box-sizing:border-box;border:1px solid var(--line,#d9cdb8);border-radius:9px;padding:11px 13px;font-size:16px;font-family:inherit;margin-bottom:8px;background:#fff;color:#16130f}
+.nl-in:focus{outline:none;border-color:#B8893C}
+.nl-sub{font-size:12px;color:#9a8e79;margin:10px 0 4px}
+.nl-chk{display:flex;align-items:center;gap:9px;font-size:14px;margin:9px 0;color:#3a2e22}
+.nl-chk input[type=checkbox]{width:17px;height:17px;flex:0 0 auto;accent-color:#B8893C}
+.nl-num{width:56px;margin-left:auto;border:1px solid var(--line,#d9cdb8);border-radius:7px;padding:6px 8px;font-size:15px;background:#fff}
+.nl-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.nl-btn{border:1px solid #B8893C;background:#fff;color:#6d563a;border-radius:40px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:inherit}
+.nl-btn.primary{background:#9a2f28;border-color:#9a2f28;color:#fff}
+.nl-btn:hover{filter:brightness(.97)}
+.nl-gate{margin-top:13px;background:rgba(154,47,40,.08);border:1px solid rgba(154,47,40,.25);color:#7a2a23;border-radius:9px;padding:10px 13px;font-size:13px;line-height:1.5}
+.nl-prev{position:sticky;top:16px}
+.nl-prevhead{font-size:12px;font-weight:600;letter-spacing:.02em;color:#6d655c;text-transform:uppercase;margin-bottom:8px}
+.nl-subjline{font-size:12px;font-weight:400;text-transform:none;color:#9a8e79;margin-top:3px}
+.nl-frame{width:100%;height:640px;border:1px solid var(--line,#d9cdb8);border-radius:12px;background:#f1e8d6}
+@media(max-width:860px){.nl-wrap{grid-template-columns:1fr}.nl-prev{position:static}.nl-frame{height:560px}}
+
 .vbadge{background:var(--ink);color:var(--paper);border-radius:20px;padding:1px 8px;font-size:10.5px;margin-left:6px}
 .pempty{color:var(--ink-55);font-size:14px;padding:6px 2px}
 .schip{width:54px;height:54px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
@@ -657,7 +677,7 @@ function renderSettings(host){
 }
 
 /* ---------- master render ---------- */
-const PANES=["hero","events","gallery","people","learn","news","about","social","settings"];
+const PANES=["hero","events","gallery","people","learn","news","newsletter","about","social","settings"];
 let ACTIVE_PANE=(function(){ try{ var v=sessionStorage.getItem("yw_pane"); return PANES.indexOf(v)>=0?v:"events"; }catch(e){ return "events"; } })();
 function showPane(name){
   if(PANES.indexOf(name)<0) name="events";
@@ -669,10 +689,163 @@ function showPane(name){
   if(btn){ try{ btn.scrollIntoView({inline:"center",block:"nearest"}); }catch(e){} }
   try{ window.scrollTo(0,0); }catch(e){}
 }
+/* ---------- newsletter composer (compose + live preview; send wired later) ---------- */
+var CAMPAIGN={subj_en:"",subj_zh:"",intro_en:"",intro_zh:"",incEvents:true,evN:2,incArticles:true,artN:3};
+
+function nlUpcomingEvents(n){
+  var list=(DATA.events||[]).filter(function(e){ return String(e.status||"").toLowerCase()!=="past" && !YW.isPast(e); });
+  list.sort(function(a,b){ return String(a.date_start||"").localeCompare(String(b.date_start||"")); });
+  return list.slice(0,Math.max(0,n));
+}
+function nlLatestArticles(n){
+  var a=(DATA.learn||[]).map(function(p){ return {p:p,sec:"blog"}; })
+        .concat((DATA.news||[]).map(function(p){ return {p:p,sec:"news"}; }));
+  a=a.filter(function(o){ return String(o.p.status||"").toLowerCase()!=="draft"; });
+  a.sort(function(x,y){ return String(y.p.date||"").localeCompare(String(x.p.date||"")); });
+  return a.slice(0,Math.max(0,n));
+}
+function nlEsc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function nlEventCard(e,lang){
+  var t=nlEsc(lang==="zh"?(e.title_zh||e.title_en):(e.title_en||e.title_zh));
+  var v=nlEsc(lang==="zh"?(e.venue_zh||e.venue_en):(e.venue_en||e.venue_zh));
+  var d=nlEsc(e.date_label||e.date_start||"");
+  var url="https://yuetwanlondon.com/event/?id="+encodeURIComponent(e.id||"");
+  var cta=lang==="zh"?"查看詳情 →":"View details →";
+  var meta=[d,v].filter(Boolean).join(" · ");
+  var img=e.image?'<img src="'+nlEsc(e.image)+'" width="600" style="width:100%;max-width:600px;display:block;border:0">':"";
+  return '<div style="border:1px solid #e2d4ba;border-radius:12px;overflow:hidden;margin:14px 0;background:#ffffff">'
+    +img+'<div style="padding:14px 16px">'
+    +'<div style="font-size:16px;font-weight:700;color:#2b2118;line-height:1.3">'+t+'</div>'
+    +(meta?'<div style="font-size:13px;color:#8a7d68;margin:5px 0 10px">'+meta+'</div>':'<div style="height:8px"></div>')
+    +'<a href="'+url+'" style="font-size:13px;color:#9a2f28;text-decoration:none;font-weight:600">'+cta+'</a>'
+    +'</div></div>';
+}
+function nlArticleCard(o,lang){
+  var p=o.p;
+  var base="https://yuetwanlondon.com/"+(o.sec==="news"?"news":"blog")+"/?id="+encodeURIComponent(p.id||"");
+  var t=nlEsc(lang==="zh"?(p.title_zh||p.title_en):(p.title_en||p.title_zh));
+  var s=nlEsc(lang==="zh"?(p.summary_zh||p.summary_en):(p.summary_en||p.summary_zh));
+  var cta=lang==="zh"?"閱讀更多 →":"Read more →";
+  var img=p.cover?'<img src="'+nlEsc(p.cover)+'" width="600" style="width:100%;max-width:600px;display:block;border:0">':"";
+  return '<div style="border:1px solid #e2d4ba;border-radius:12px;overflow:hidden;margin:14px 0;background:#ffffff">'
+    +img+'<div style="padding:14px 16px">'
+    +'<div style="font-size:16px;font-weight:700;color:#2b2118;line-height:1.3">'+t+'</div>'
+    +(s?'<div style="font-size:13.5px;color:#5b4f3f;margin:6px 0 10px;line-height:1.5">'+s+'</div>':'<div style="height:8px"></div>')
+    +'<a href="'+base+'" style="font-size:13px;color:#9a2f28;text-decoration:none;font-weight:600">'+cta+'</a>'
+    +'</div></div>';
+}
+
+// Assemble the bilingual email. Leave name/unsub as {{placeholders}} unless supplied (preview fills them).
+function buildCampaignEmail(o){
+  o=o||{};
+  var name=(o.name!=null)?o.name:"{{name}}";
+  var unsub=(o.unsub!=null)?o.unsub:"{{unsub}}";
+  var evs=o.incEvents?nlUpcomingEvents(o.evN||0):[];
+  var arts=o.incArticles?nlLatestArticles(o.artN||0):[];
+  var secEn="",secZh="";
+  if(evs.length){
+    secEn+='<div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#b8893c;margin:24px 0 2px">Upcoming Events</div>'+evs.map(function(e){return nlEventCard(e,"en");}).join("");
+    secZh+='<div style="font-size:13px;letter-spacing:.06em;color:#b8893c;margin:24px 0 2px">即將舉行</div>'+evs.map(function(e){return nlEventCard(e,"zh");}).join("");
+  }
+  if(arts.length){
+    secEn+='<div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#b8893c;margin:24px 0 2px">Latest Articles</div>'+arts.map(function(a){return nlArticleCard(a,"en");}).join("");
+    secZh+='<div style="font-size:13px;letter-spacing:.06em;color:#b8893c;margin:24px 0 2px">最新文章</div>'+arts.map(function(a){return nlArticleCard(a,"zh");}).join("");
+  }
+  var greetEn="Dear "+name+",";
+  var greetZh=name+" 您好，";
+  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+    +'<body style="margin:0;padding:0;background:#f1e8d6;font-family:Georgia,serif;color:#2b2118">'
+    +'<div style="max-width:600px;margin:0 auto;background:#fffaf0">'
+    +'<div style="background:#16130f;padding:20px 24px;text-align:center">'
+      +'<div style="font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#c9a45e">Yuet Wan London</div>'
+      +'<div style="font-size:14px;color:#e7dcc6;margin-top:3px">倫敦粵韻曲藝文化協會</div>'
+    +'</div>'
+    +'<div style="padding:28px 24px">'
+      +'<p style="font-size:15px;margin:0 0 12px">'+nlEsc(greetEn)+'</p>'
+      +'<div style="font-size:15px;line-height:1.65;color:#3a2e22">'+(o.intro_en||"")+'</div>'
+      +secEn
+      +'<div style="border-top:1px solid #e2d4ba;margin:30px 0 22px"></div>'
+      +'<p style="font-size:15px;margin:0 0 12px">'+nlEsc(greetZh)+'</p>'
+      +'<div style="font-size:15px;line-height:1.85;color:#3a2e22">'+(o.intro_zh||"")+'</div>'
+      +secZh
+    +'</div>'
+    +'<div style="background:#16130f;padding:22px 24px;text-align:center;color:#b3a892;font-size:12px;line-height:1.7">'
+      +'Yuet Wan London · 倫敦粵韻曲藝文化協會<br>London, United Kingdom · yuetwanlondon@gmail.com<br>'
+      +'<a href="'+unsub+'" style="color:#c9a45e;text-decoration:underline">Unsubscribe · 取消訂閱</a>'
+    +'</div>'
+    +'</div></body></html>';
+}
+
+function nlReadState(){
+  if($("nl_subj_en")) CAMPAIGN.subj_en=$("nl_subj_en").value||"";
+  if($("nl_subj_zh")) CAMPAIGN.subj_zh=$("nl_subj_zh").value||"";
+  if($("nl_intro_en")) CAMPAIGN.intro_en=readRich("nl_intro_en");
+  if($("nl_intro_zh")) CAMPAIGN.intro_zh=readRich("nl_intro_zh");
+  if($("nl_inc_events")) CAMPAIGN.incEvents=$("nl_inc_events").checked;
+  if($("nl_inc_articles")) CAMPAIGN.incArticles=$("nl_inc_articles").checked;
+  if($("nl_ev_n")) CAMPAIGN.evN=+$("nl_ev_n").value||0;
+  if($("nl_art_n")) CAMPAIGN.artN=+$("nl_art_n").value||0;
+}
+function updatePreview(){
+  nlReadState();
+  var html=buildCampaignEmail({
+    intro_en:CAMPAIGN.intro_en, intro_zh:CAMPAIGN.intro_zh,
+    incEvents:CAMPAIGN.incEvents, evN:CAMPAIGN.evN,
+    incArticles:CAMPAIGN.incArticles, artN:CAMPAIGN.artN,
+    name:"[Name]", unsub:"#"
+  });
+  var f=$("nl_preview"); if(f) f.srcdoc=html;
+  var sl=$("nl_subjline"); if(sl) sl.textContent=(CAMPAIGN.subj_en||"(no subject)")+"  ·  "+(CAMPAIGN.subj_zh||"（未設定主題）");
+}
+function nlSendNotice(){
+  var g=$("nl_gate");
+  if(g){ g.style.display="block"; g.textContent="Sending isn't connected yet. Once your Workspace / Gmail sending account is set up, this button will deliver the newsletter to all active subscribers — each with their own unsubscribe link added automatically."; }
+}
+function renderNewsletter(host){
+  if(!host) return;
+  host.innerHTML =
+    '<div class="nl-wrap">'
+    + '<div class="nl-form">'
+      + '<div class="nl-banner">Compose your newsletter and watch the live preview update on the right. Sending to subscribers is the next step — it switches on once your email sending account is connected.</div>'
+      + '<label class="nl-lbl">Subject line · 主題</label>'
+      + '<input id="nl_subj_en" class="nl-in" placeholder="Subject (English)" value="'+E(CAMPAIGN.subj_en)+'">'
+      + '<input id="nl_subj_zh" class="nl-in" placeholder="主題（中文）" value="'+E(CAMPAIGN.subj_zh)+'">'
+      + '<label class="nl-lbl">Message · 內文</label>'
+      + richBarHTML()
+      + '<div class="nl-sub">English</div>'
+      + richField("nl_intro_en", CAMPAIGN.intro_en||"", false)
+      + '<div class="nl-sub">中文</div>'
+      + richField("nl_intro_zh", CAMPAIGN.intro_zh||"", true)
+      + '<label class="nl-lbl">Auto-include latest content · 自動加入最新內容</label>'
+      + '<label class="nl-chk"><input type="checkbox" id="nl_inc_events"'+(CAMPAIGN.incEvents?" checked":"")+'> <span>Upcoming events · 即將舉行</span><input type="number" id="nl_ev_n" min="0" max="6" value="'+(+CAMPAIGN.evN||0)+'" class="nl-num"></label>'
+      + '<label class="nl-chk"><input type="checkbox" id="nl_inc_articles"'+(CAMPAIGN.incArticles?" checked":"")+'> <span>Latest articles · 最新文章</span><input type="number" id="nl_art_n" min="0" max="6" value="'+(+CAMPAIGN.artN||0)+'" class="nl-num"></label>'
+      + '<div class="nl-actions">'
+        + '<button class="nl-btn" id="nl_test" type="button">Send test to myself</button>'
+        + '<button class="nl-btn primary" id="nl_send" type="button">Send to all active</button>'
+      + '</div>'
+      + '<div class="nl-gate" id="nl_gate" style="display:none"></div>'
+    + '</div>'
+    + '<div class="nl-prev">'
+      + '<div class="nl-prevhead">Live preview · 預覽<div class="nl-subjline" id="nl_subjline"></div></div>'
+      + '<iframe id="nl_preview" class="nl-frame" title="email preview"></iframe>'
+    + '</div>'
+    + '</div>';
+  wireRichBar(host);
+  ["nl_subj_en","nl_subj_zh"].forEach(function(id){ var el=$(id); if(el) el.addEventListener("input",updatePreview); });
+  ["nl_inc_events","nl_inc_articles","nl_ev_n","nl_art_n"].forEach(function(id){ var el=$(id); if(el){ el.addEventListener("change",updatePreview); el.addEventListener("input",updatePreview); } });
+  ["nl_intro_en","nl_intro_zh"].forEach(function(id){ var el=$(id); if(el) el.addEventListener("input",updatePreview); });
+  var bar=host.querySelector(".rtbar"); if(bar) bar.addEventListener("pointerup",function(){ setTimeout(updatePreview,30); });
+  var t=$("nl_test"), s=$("nl_send");
+  if(t) t.onclick=nlSendNotice;
+  if(s) s.onclick=nlSendNotice;
+  updatePreview();
+}
+
 function renderAll(){
   $("langItemTxt").textContent = LANG==="en" ? "中文 preview" : "EN preview";
   $("canvas").innerHTML=`
-    <nav class="enav" id="enav"><button data-go="hero">Hero</button><button data-go="events">Events</button><button data-go="gallery">Gallery</button><button data-go="people">People</button><button data-go="learn">Learn</button><button data-go="news">News</button><button data-go="about">About</button><button data-go="social">Social</button><button data-go="settings">Settings</button></nav>
+    <nav class="enav" id="enav"><button data-go="hero">Hero</button><button data-go="events">Events</button><button data-go="gallery">Gallery</button><button data-go="people">People</button><button data-go="learn">Learn</button><button data-go="news">News</button><button data-go="newsletter">Newsletter</button><button data-go="about">About</button><button data-go="social">Social</button><button data-go="settings">Settings</button></nav>
     <div class="pane" data-pane="hero"><div class="sec-wrap first"><div class="slabel"><h2>Hero</h2><span class="ln"></span><span class="sub">首頁橫幅</span></div><div id="s_hero"></div><button class="addbtn" data-add="hero">+ Add hero slide</button></div>
     </div>
     <div class="pane" data-pane="events"><div class="sec-wrap"><div class="slabel"><h2>What's On</h2><span class="ln"></span><span class="sub">即將舉行</span></div><div id="s_up"></div><button class="addbtn" data-add="events" data-status="upcoming">+ Add event</button></div>
@@ -686,6 +859,8 @@ function renderAll(){
     </div>
     <div class="pane" data-pane="news"><div class="sec-wrap"><div class="slabel"><h2>News</h2><span class="ln"></span><span class="sub">最新消息 · blog</span></div><div id="s_news"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="addbtn" data-add="news" style="margin-top:0">+ Add news post</button><button class="addbtn" data-import="news" style="margin-top:0;border-style:solid">Import from Doc</button></div></div>
     </div>
+    <div class="pane" data-pane="newsletter"><div class="sec-wrap"><div class="slabel"><h2>Newsletter</h2><span class="ln"></span><span class="sub">電郵通訊 · compose &amp; preview</span></div><div id="s_newsletter"></div></div>
+    </div>
     <div class="pane" data-pane="about"><div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
     </div>
     <div class="pane" data-pane="social"><div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
@@ -694,7 +869,7 @@ function renderAll(){
     </div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
-  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set"));
+  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set")); renderNewsletter($("s_newsletter"));
   showPane(ACTIVE_PANE);
 }
 
