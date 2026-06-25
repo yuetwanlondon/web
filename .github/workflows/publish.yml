@@ -1,38 +1,31 @@
-name: Publish data snapshot
-# THE SINGLE deployer for this site. Refreshes data.json from the Google Sheet
-# and deploys to GitHub Pages. Keep the auto-generated "static.yml" DISABLED so
-# the two never race each other on a Pages deployment.
+name: Refresh data snapshot
+# This workflow ONLY refreshes data.json from the Google Sheet and commits it.
+# It does NOT deploy. GitHub Pages is set to "Deploy from a branch", so every
+# push to main (including this one's data.json commit) is published automatically
+# by GitHub's own Pages builder. That removes the deploy-pages collision for good.
 on:
-  push:
-    branches: [main]                 # <-- code pushes deploy here. Change to "master" if that's your default branch.
   workflow_dispatch:                 # manual "Run workflow" button
   repository_dispatch:               # the editor's "Publish now" button
     types: [rebuild]
   schedule:
-    - cron: '*/30 * * * *'           # safety auto-refresh; only DEPLOYS if the data actually changed
+    - cron: '*/30 * * * *'           # safety auto-refresh every 30 min
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write                    # to commit the refreshed data.json
 concurrency:
-  group: "pages"
-  cancel-in-progress: false          # Pages must let a deploy finish; never cancel mid-deploy
+  group: "refresh-data"
+  cancel-in-progress: true           # safe here: this job only commits a file, never deploys
 jobs:
-  build-and-deploy:
+  refresh:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
       # ----------------------------------------------------------------------
-      # This must be the *currently active* Web app /exec URL.
+      # Must be the *currently active* Web app /exec URL.
       # Apps Script > Deploy > Manage deployments > (Web app) > copy "Web app URL".
       # Required on that deployment:  Execute as = Me ,  Who has access = Anyone
       # ----------------------------------------------------------------------
-      - name: Refresh data + decide whether to deploy
-        id: prep
+      - name: Fetch data from the Sheet and commit if it changed
         env:
           APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyUoOwvu32QbKPaLIueyJFFSqft0b7qoASYEImHE3Mj-kRBxphaLbm1yyuXigFfiDKDrw/exec"
         run: |
@@ -48,10 +41,10 @@ jobs:
           try:
               d = json.load(open("data.fetched.json"))
           except Exception as e:
-              print("::error::Response was not JSON (most likely a Google login / permission / error page).")
+              print("::error::Response was not JSON (a Google login / permission / error page).")
               print(open("data.fetched.json", encoding="utf-8", errors="replace").read()[:300]); sys.exit(1)
           if d.get("ok") is not True:
-              print("::error::JSON received but missing ok:true — check the doGet payload."); sys.exit(1)
+              print("::error::JSON received but missing ok:true."); sys.exit(1)
           print("OK — events:", len(d.get("events", [])), "people:", len(d.get("people", [])),
                 "gallery:", len(d.get("gallery", [])), "hero:", len(d.get("hero", [])))
           PY
@@ -60,47 +53,22 @@ jobs:
             echo "::error::Apps Script did not return 200 (got $code). 404=stale /exec URL, 401/403='Who has access' not Anyone."
           fi
 
-          changed=0
-          if [ "$valid" = "1" ]; then
-            if [ ! -f data.json ] || ! cmp -s data.fetched.json data.json; then
-              mv -f data.fetched.json data.json; changed=1; echo "data.json updated."
-            else
-              rm -f data.fetched.json; echo "Data is identical to what's already published."
-            fi
-          else
+          if [ "$valid" != "1" ]; then
             rm -f data.fetched.json
-            echo "::warning::Could not refresh data — keeping the existing data.json."
+            echo "::warning::Could not refresh data — leaving the existing data.json untouched."
+            exit 0
           fi
 
-          # Deploy on real triggers always; on the timer ONLY when data changed (keeps runs fast).
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$changed" = "0" ]; then
-            echo "deploy=false" >> "$GITHUB_OUTPUT"
-            echo "Scheduled run, nothing changed — skipping the deploy. ✅ (fast no-op)"
-          else
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          if [ -f data.json ] && cmp -s data.fetched.json data.json; then
+            rm -f data.fetched.json
+            echo "Data is identical to what's already published — nothing to do."
+            exit 0
           fi
-          echo "changed=$changed" >> "$GITHUB_OUTPUT"
-          exit 0
 
-      - name: Commit data.json if it changed
-        if: steps.prep.outputs.changed == '1'
-        run: |
+          mv -f data.fetched.json data.json
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data.json
           git commit -m "chore: refresh data snapshot"
-          git push
-
-      - name: Trim non-served files for a smaller, faster upload
-        if: steps.prep.outputs.deploy == 'true'
-        run: rm -rf .git .github
-
-      - uses: actions/configure-pages@v5
-        if: steps.prep.outputs.deploy == 'true'
-      - uses: actions/upload-pages-artifact@v3
-        if: steps.prep.outputs.deploy == 'true'
-        with:
-          path: "."
-      - id: deployment
-        if: steps.prep.outputs.deploy == 'true'
-        uses: actions/deploy-pages@v4
+          git push || (git pull --rebase && git push)
+          echo "data.json updated and pushed. GitHub Pages will redeploy the site automatically."
