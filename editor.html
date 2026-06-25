@@ -804,6 +804,43 @@ function nlSendNotice(){
   var g=$("nl_gate");
   if(g){ g.style.display="block"; g.textContent="Sending isn't connected yet. Once your Workspace / Gmail sending account is set up, this button will deliver the newsletter to all active subscribers — each with their own unsubscribe link added automatically."; }
 }
+function nlBuildPayload(){
+  nlReadState();
+  var html=buildCampaignEmail({
+    intro_en:CAMPAIGN.intro_en, intro_zh:CAMPAIGN.intro_zh,
+    incEvents:CAMPAIGN.incEvents, evN:CAMPAIGN.evN,
+    incArticles:CAMPAIGN.incArticles, artN:CAMPAIGN.artN
+  });
+  var subject=(CAMPAIGN.subj_en||"").trim();
+  if(CAMPAIGN.subj_zh && CAMPAIGN.subj_zh.trim()) subject += (subject?" \u00b7 ":"") + CAMPAIGN.subj_zh.trim();
+  if(!subject) subject="Yuet Wan London";
+  return {subject:subject, html:html};
+}
+async function nlSendTest(){
+  var to=prompt("Send a test copy to which email address?","");
+  if(!to||!to.trim()) return;
+  var p=nlBuildPayload();
+  var g=$("nl_gate"); if(g){g.style.display="block";g.textContent="Sending test\u2026";}
+  try{
+    var res=await YW.post({action:"sendCampaign",pass:AUTH.pass,mode:"test",test_to:to.trim(),subject:p.subject,html:p.html});
+    if(g) g.textContent=(res&&res.ok)?("Test sent to "+to.trim()+" \u2014 check the inbox (and the spam / promotions tab)."):("Could not send: "+((res&&res.error)||"unknown")+". Have you run authorizeSending and granted the email permission?");
+  }catch(e){ if(g) g.textContent="Could not send (network error)."; }
+}
+async function nlSendAll(){
+  if(!confirm("Send this newsletter to ALL active subscribers now?\n\nReal emails will be sent. Make sure you've sent yourself a test first.")) return;
+  var p=nlBuildPayload();
+  var g=$("nl_gate"); if(g){g.style.display="block";g.textContent="Sending to subscribers\u2026 keep this tab open until it finishes.";}
+  try{
+    var res=await YW.post({action:"sendCampaign",pass:AUTH.pass,mode:"all",subject:p.subject,html:p.html});
+    if(res&&res.ok){
+      var msg="Done \u2014 sent "+res.sent+" email(s).";
+      if(res.failed) msg+=" "+res.failed+" failed.";
+      if(res.pending) msg+=" "+res.pending+" not sent yet (daily limit reached \u2014 run \u201cSend to all\u201d again tomorrow to finish the rest).";
+      if(res.sent===0 && !res.pending) msg+=" (No active subscribers were due \u2014 they may already have received it today.)";
+      if(g) g.textContent=msg;
+    } else { if(g) g.textContent="Could not send: "+((res&&res.error)||"unknown")+". Have you run authorizeSending and granted the email permission?"; }
+  }catch(e){ if(g) g.textContent="Could not send (network error)."; }
+}
 function renderNewsletter(host){
   if(!host) return;
   host.innerHTML =
@@ -839,8 +876,8 @@ function renderNewsletter(host){
   ["nl_intro_en","nl_intro_zh"].forEach(function(id){ var el=$(id); if(el) el.addEventListener("input",updatePreview); });
   var bar=host.querySelector(".rtbar"); if(bar) bar.addEventListener("pointerup",function(){ setTimeout(updatePreview,30); });
   var t=$("nl_test"), s=$("nl_send");
-  if(t) t.onclick=nlSendNotice;
-  if(s) s.onclick=nlSendNotice;
+  if(t) t.onclick=nlSendTest;
+  if(s) s.onclick=nlSendAll;
   updatePreview();
 }
 
