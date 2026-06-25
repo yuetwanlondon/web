@@ -883,6 +883,18 @@ function openDocPicker(section){
     list.querySelectorAll(".docrow").forEach(b=>b.onclick=()=>{ closeDocPicker(); importDocById(DOCPICK_SECTION, b.dataset.id); });
   }).catch(err=>{ list.innerHTML='<div class="pickempty">Could not load Docs.<br><small>'+E(String(err.message||err))+'</small></div>'; });
 }
+function liftDocTitle(post, lang){
+  var tk="title_"+lang, bk="body_"+lang;
+  if(post[tk] && String(post[tk]).trim()) return;          // Doc already gave us a title
+  var body=String(post[bk]||""); if(!body) return;
+  var parts=body.split(/<br\s*\/?>/i);
+  var first=(parts[0]||"").trim();
+  var m=first.match(/^<strong>([\s\S]*)<\/strong>$/i);   // a Title/Heading-styled first line is bold-only
+  if(!m) return;
+  var t=YW.plain(m[1]); if(!t) return;
+  post[tk]=t;
+  post[bk]=parts.slice(1).join("<br>").replace(/^(\s*<br\s*\/?>\s*)+/i,"");
+}
 function deriveSummary(bodyHtml, maxLatin, maxCJK){
   if(!bodyHtml) return "";
   var lines=YW.richLines(bodyHtml), para="", fallback="";
@@ -905,6 +917,7 @@ async function importDocById(section, docId){
     const res=await YW.post({action:"import",pass:AUTH.pass,url:docId,section:section});
     if(!res||!res.ok||!res.post) throw new Error(res&&res.error||"import failed");
     const post=res.post;
+    liftDocTitle(post,"en"); liftDocTitle(post,"zh");   // styled Doc title -> Title box (was landing in the body)
     if(!post.summary_en && post.body_en) post.summary_en=deriveSummary(post.body_en,180,90);
     if(!post.summary_zh && post.body_zh) post.summary_zh=deriveSummary(post.body_zh,180,80);
     post.doc_id=String(docId||"");
