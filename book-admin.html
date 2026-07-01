@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Booking Admin · Yuet Wan London</title>
+<link rel="icon" type="image/png" href="/img/yuetwanlondon-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16130F; --ink-2:#211C16; --ink-80:#3a3530; --ink-55:#6d655c;
+  --paper:#F4ECDD; --mist:#F6F3EE; --white:#fff;
+  --vermilion:#C8402E; --vermilion-d:#A8331F; --brass:#B8893C; --brass-l:#D8B570;
+  --line:rgba(22,19,15,.14);
+  --grot:"Plus Jakarta Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--mist);color:var(--ink);font-family:var(--grot);-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--grot);margin:0}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:10;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:space-between;padding:13px 18px}
+.bar .lg{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;letter-spacing:.01em}
+.bar .lg .dot{width:7px;height:7px;border-radius:50%;background:var(--vermilion)}
+.bar .lg small{font-weight:500;color:var(--brass-l);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.bar .out{background:transparent;color:var(--paper);border:1px solid rgba(244,236,221,.25);border-radius:30px;padding:7px 15px;font-size:13px;font-weight:600}
+.bar .out:hover{background:rgba(244,236,221,.1)}
+
+/* layout */
+.wrap{max-width:860px;margin:0 auto;padding:22px 18px 80px}
+.note{background:#fffaf0;border:1px solid var(--line);border-left:3px solid var(--brass);border-radius:10px;padding:12px 15px;font-size:13.5px;line-height:1.55;color:var(--ink-80);margin-bottom:22px}
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px}
+.rowhead h2{font-size:20px}
+.rowhead .cx{font-size:12.5px;color:var(--ink-55)}
+
+/* login */
+.login{min-height:78vh;display:grid;place-items:center;padding:24px}
+.login .card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:30px 26px;width:100%;max-width:360px;box-shadow:0 12px 40px rgba(22,19,15,.08)}
+.login h1{font-size:20px;margin-bottom:4px}
+.login p{color:var(--ink-55);font-size:13.5px;margin:0 0 20px}
+
+/* fields */
+label.f{display:block;font-size:11.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-55);margin:15px 0 6px}
+.in{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
+.in:focus{outline:none;border-color:var(--brass)}
+select.in{appearance:auto}
+textarea.in{min-height:74px;resize:vertical}
+.pwrap{position:relative}
+.pwrap .eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--ink-55);padding:6px;font-size:12px}
+
+/* buttons */
+.btn{border:1px solid var(--brass);background:#fff;color:#6d563a;border-radius:30px;padding:11px 20px;font-size:14px;font-weight:600}
+.btn:hover{background:#fbf4e8}
+.btn.primary{background:var(--vermilion);border-color:var(--vermilion);color:#fff}
+.btn.primary:hover{background:var(--vermilion-d)}
+.btn.ghost{border-color:var(--line);color:var(--ink-55)}
+.btn.sm{padding:7px 13px;font-size:12.5px}
+.btn.danger{border-color:rgba(200,64,46,.4);color:var(--vermilion-d)}
+.btn.danger:hover{background:rgba(200,64,46,.07)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* show cards */
+.grid{display:grid;gap:12px}
+.show{background:var(--white);border:1px solid var(--line);border-radius:13px;padding:15px 17px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.show .m h3{font-size:16.5px;line-height:1.25}
+.show .m .zh{font-family:"Noto Sans TC",var(--grot);color:var(--ink-80);font-size:14px;margin-top:1px}
+.show .m .meta{font-size:12.5px;color:var(--ink-55);margin-top:7px;line-height:1.5}
+.show .acts{display:flex;flex-direction:column;gap:7px;flex:none}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:7px}
+.b-draft{background:#eee7d7;color:#7a6a4a}
+.b-on_sale{background:#e2f0e0;color:#2f6b34}
+.b-closed{background:#f0e0de;color:#9a3a2f}
+.b-past{background:#e6e2db;color:#6d655c}
+.empty{text-align:center;color:var(--ink-55);padding:40px 20px;border:1.5px dashed var(--line);border-radius:14px;font-size:14px}
+
+/* form panel */
+.panel{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:22px 22px 24px;margin-top:4px}
+.panel h2{font-size:18px;margin-bottom:4px}
+.panel .sub{color:var(--ink-55);font-size:13px;margin:0 0 8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.formfoot{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;align-items:center}
+.gate{margin-top:14px;background:rgba(200,64,46,.08);border:1px solid rgba(200,64,46,.25);color:#8a2c20;border-radius:10px;padding:10px 13px;font-size:13px;line-height:1.5}
+.gate.ok{background:rgba(47,107,52,.08);border-color:rgba(47,107,52,.28);color:#2f6b34}
+.hint{font-size:11.5px;color:var(--ink-55);margin-top:5px;line-height:1.45}
+.soon{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--brass);background:#fbf3e5;border-radius:20px;padding:2px 9px;margin-left:8px}
+@media(max-width:560px){.two{grid-template-columns:1fr}.show{flex-direction:column}.show .acts{flex-direction:row}}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login" class="login">
+  <div class="card">
+    <h1>Booking Admin</h1>
+    <p>Yuet Wan London · 售票後台</p>
+    <label class="f" for="lpass">Password · 密碼</label>
+    <div class="pwrap">
+      <input class="in" type="password" id="lpass" autocomplete="current-password">
+      <button class="eye" type="button" id="leye">Show</button>
+    </div>
+    <div style="margin-top:18px"><button class="btn primary" id="lbtn" style="width:100%">Sign in</button></div>
+    <div id="lgate" class="gate hidden"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app" class="hidden">
+  <div class="bar">
+    <div class="lg"><span class="dot"></span>Yuet Wan London <small>Booking</small></div>
+    <button class="out" id="logout">Sign out</button>
+  </div>
+  <div class="wrap">
+    <div class="note" id="conn">Connecting to the booking backend…</div>
+
+    <!-- list view -->
+    <div id="listView">
+      <div class="rowhead">
+        <h2>Shows</h2>
+        <button class="btn primary sm" id="newShow">+ New show</button>
+      </div>
+      <div id="showList" class="grid"></div>
+    </div>
+
+    <!-- form view -->
+    <div id="formView" class="hidden">
+      <div class="panel">
+        <h2 id="formTitle">New show</h2>
+        <p class="sub">Set up a performance. You can change any of this later.</p>
+
+        <label class="f">Show ID <span style="text-transform:none;color:var(--ink-55)">— short, no spaces (e.g. summer-gala-2026)</span></label>
+        <input class="in" id="f_id" placeholder="summer-gala-2026">
+        <div class="hint" id="idHint"></div>
+
+        <div class="two">
+          <div><label class="f">Status</label>
+            <select class="in" id="f_status">
+              <option value="draft">Draft (hidden)</option>
+              <option value="on_sale">On sale</option>
+              <option value="closed">Closed</option>
+              <option value="past">Past</option>
+            </select>
+          </div>
+          <div><label class="f">Seating</label>
+            <select class="in" id="f_seating">
+              <option value="assigned">Assigned seats (seat map)</option>
+              <option value="ga">General admission (capacity only)</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="f">Title — English</label>
+        <input class="in" id="f_title_en" placeholder="A Night of Cantonese Opera">
+        <label class="f">Title — 中文</label>
+        <input class="in" id="f_title_zh" placeholder="粵劇之夜">
+
+        <div class="two">
+          <div><label class="f">Date (YYYY-MM-DD)</label><input class="in" id="f_date" placeholder="2026-09-06"></div>
+          <div><label class="f">Start time</label><input class="in" id="f_time" placeholder="7:30pm"></div>
+        </div>
+        <div class="two">
+          <div><label class="f">Doors open (optional)</label><input class="in" id="f_doors" placeholder="7:00pm"></div>
+          <div><label class="f">Daily booking cap</label><input class="in" id="f_daily_cap" type="number" min="0" value="100"><div class="hint">Max new bookings accepted per day. Enforced when the booking page is live.</div></div>
+        </div>
+
+        <label class="f">Venue — English</label>
+        <input class="in" id="f_venue_en" placeholder="Shaw Theatre, London">
+        <label class="f">Venue — 中文</label>
+        <input class="in" id="f_venue_zh" placeholder="倫敦邵氏劇院">
+
+        <div class="two">
+          <div><label class="f">Capacity <span style="text-transform:none;color:var(--ink-55)">(total seats)</span></label><input class="in" id="f_capacity" type="number" min="0" placeholder="200"></div>
+          <div><label class="f">Seat map <span class="soon">Next phase</span></label><input class="in" id="f_map_id" placeholder="(built in Phase 2)" disabled></div>
+        </div>
+
+        <label class="f">Price note — English <span style="text-transform:none;color:var(--ink-55)">(shown to buyers; payment is arranged with you)</span></label>
+        <input class="in" id="f_price_note_en" placeholder="£15 · £10 concessions — pay on confirmation">
+        <label class="f">Price note — 中文</label>
+        <input class="in" id="f_price_note_zh" placeholder="£15 · 優惠 £10 — 確認後付款">
+
+        <label class="f">Internal notes (only you see these)</label>
+        <textarea class="in" id="f_notes" placeholder="Anything to remember about this show…"></textarea>
+
+        <div class="gate hidden" id="fgate"></div>
+        <div class="formfoot">
+          <button class="btn primary" id="saveShow">Save show</button>
+          <button class="btn ghost" id="cancelForm">Cancel</button>
+          <button class="btn danger sm" id="deleteShow" style="margin-left:auto">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PASTE YOUR BOOKING WEB-APP URL BELOW (the /exec link from the
+   NEW booking Apps Script deployment — NOT your website script).
+   ============================================================ */
+const BOOK_API = "PASTE_BOOKING_EXEC_URL_HERE";
+
+const $ = function(id){ return document.getElementById(id); };
+let AUTH = null;
+let SHOWS = [];
+let EDIT_ID = null;
+
+async function post(payload){
+  const r = await fetch(BOOK_API, { method:"POST", body: JSON.stringify(payload) });
+  return r.json();
+}
+
+/* ---------- login ---------- */
+function showGate(el, msg, ok){ el.className = "gate" + (ok?" ok":""); el.textContent = msg; el.classList.remove("hidden"); }
+$("leye").onclick = function(){ var p=$("lpass"); if(p.type==="password"){p.type="text";this.textContent="Hide";}else{p.type="password";this.textContent="Show";} };
+$("lpass").addEventListener("keydown", function(e){ if(e.key==="Enter") $("lbtn").click(); });
+
+$("lbtn").onclick = async function(){
+  var pass = $("lpass").value;
+  if(!pass){ showGate($("lgate"),"Please enter the password.",false); return; }
+  if(BOOK_API.indexOf("PASTE_")===0){ showGate($("lgate"),"Set BOOK_API at the top of this file to your booking /exec URL first.",false); return; }
+  this.disabled = true; this.textContent = "Signing in…";
+  try{
+    var res = await post({ action:"login", user: USER(), pass: pass });
+    if(res && res.ok){ AUTH = { user: USER(), pass: pass }; try{ sessionStorage.setItem("ywb_auth", JSON.stringify(AUTH)); }catch(e){} boot(); }
+    else { showGate($("lgate"),"Wrong password.",false); this.disabled=false; this.textContent="Sign in"; }
+  }catch(e){ showGate($("lgate"),"Could not reach the backend. Check the BOOK_API URL and that the web app is deployed to 'Anyone'.",false); this.disabled=false; this.textContent="Sign in"; }
+};
+function USER(){ return "yuetwan"; } // must match ADMIN_USER in Code.gs
+
+$("logout").onclick = function(){ try{ sessionStorage.removeItem("ywb_auth"); }catch(e){} AUTH=null; $("app").classList.add("hidden"); $("login").classList.remove("hidden"); $("lpass").value=""; };
+
+/* ---------- boot ---------- */
+async function boot(){
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  showForm(false);
+  try{
+    var s = await post({ action:"stats", pass: AUTH.pass });
+    if(s && s.ok){ $("conn").innerHTML = 'Connected · backend '+s.version+' · '+s.shows+' show(s) so far. <span style="color:var(--ink-55)">Phase 1 — Shows. Seat maps, the buyer booking page and check-in come next.</span>'; }
+    else { $("conn").textContent = "Connected, but the backend replied with an error. Re-check the deployment."; }
+  }catch(e){ $("conn").textContent = "Connected to the page, but couldn't read from the backend yet."; }
+  loadShows();
+}
+
+/* ---------- shows list ---------- */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function statusLabel(s){ return ({draft:"Draft",on_sale:"On sale",closed:"Closed",past:"Past"})[s]||s||"—"; }
+
+async function loadShows(){
+  var host = $("showList");
+  host.innerHTML = '<div class="empty">Loading shows…</div>';
+  try{
+    var res = await post({ action:"shows", pass: AUTH.pass });
+    SHOWS = (res && res.ok && res.shows) ? res.shows : [];
+  }catch(e){ SHOWS = []; }
+  renderShows();
+}
+function renderShows(){
+  var host = $("showList");
+  if(!SHOWS.length){ host.innerHTML = '<div class="empty">No shows yet. Tap <b>+ New show</b> to create your first performance.</div>'; return; }
+  var sorted = SHOWS.slice().sort(function(a,b){ return String(b.date||"").localeCompare(String(a.date||"")); });
+  host.innerHTML = sorted.map(function(s){
+    var st = String(s.status||"draft");
+    var meta = [];
+    if(s.date) meta.push(esc(s.date)+(s.time?(" · "+esc(s.time)):""));
+    if(s.venue_en) meta.push(esc(s.venue_en));
+    var seat = s.seating_type==="ga" ? "General admission" : "Assigned seats";
+    meta.push(seat + (s.capacity?(" · cap "+esc(s.capacity)):""));
+    return '<div class="show">'
+      + '<div class="m">'
+        + '<h3>'+esc(s.title_en||s.id||"Untitled")+'<span class="badge b-'+st+'">'+statusLabel(st)+'</span></h3>'
+        + (s.title_zh?'<div class="zh">'+esc(s.title_zh)+'</div>':'')
+        + '<div class="meta">'+meta.join('<br>')+'</div>'
+      + '</div>'
+      + '<div class="acts">'
+        + '<button class="btn sm" data-edit="'+esc(s.id)+'">Edit</button>'
+      + '</div>'
+    + '</div>';
+  }).join("");
+  Array.prototype.forEach.call(host.querySelectorAll("[data-edit]"), function(b){
+    b.onclick = function(){ openForm(b.getAttribute("data-edit")); };
+  });
+}
+
+/* ---------- form ---------- */
+function showForm(on){ $("formView").classList.toggle("hidden", !on); $("listView").classList.toggle("hidden", on); if(on) window.scrollTo(0,0); }
+var FIELDS = ["id","status","seating","title_en","title_zh","date","time","doors","daily_cap","venue_en","venue_zh","capacity","map_id","price_note_en","price_note_zh","notes"];
+function fid(k){ return $("f_"+k); }
+
+$("newShow").onclick = function(){ openForm(null); };
+$("cancelForm").onclick = function(){ showForm(false); };
+
+function openForm(id){
+  EDIT_ID = id;
+  $("fgate").classList.add("hidden");
+  var s = id ? (SHOWS.filter(function(x){return x.id===id;})[0]||{}) : {};
+  $("formTitle").textContent = id ? ("Edit · "+(s.title_en||id)) : "New show";
+  fid("id").value = s.id||"";
+  fid("id").disabled = !!id;                                  // don't let the ID change on edit (it keys everything)
+  $("idHint").textContent = id ? "The ID can't be changed once a show exists." : "Used in the booking link. Letters, numbers and dashes only.";
+  fid("status").value = s.status||"draft";
+  fid("seating").value = s.seating_type||"assigned";
+  fid("title_en").value = s.title_en||"";
+  fid("title_zh").value = s.title_zh||"";
+  fid("date").value = s.date||"";
+  fid("time").value = s.time||"";
+  fid("doors").value = s.doors||"";
+  fid("daily_cap").value = (s.daily_cap!=null&&s.daily_cap!=="")?s.daily_cap:"100";
+  fid("venue_en").value = s.venue_en||"";
+  fid("venue_zh").value = s.venue_zh||"";
+  fid("capacity").value = s.capacity||"";
+  fid("map_id").value = s.map_id||"";
+  fid("price_note_en").value = s.price_note_en||"";
+  fid("price_note_zh").value = s.price_note_zh||"";
+  fid("notes").value = s.notes||"";
+  $("deleteShow").style.display = id ? "" : "none";
+  showForm(true);
+}
+
+/* auto-suggest an ID from the title while typing a NEW show */
+fid("title_en").addEventListener("input", function(){
+  if(EDIT_ID) return;
+  if(fid("id").dataset.touched) return;
+  var slug = this.value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);
+  fid("id").value = slug;
+});
+fid("id").addEventListener("input", function(){ this.dataset.touched="1"; });
+
+$("saveShow").onclick = async function(){
+  var show = {
+    id: fid("id").value.trim(),
+    status: fid("status").value,
+    seating_type: fid("seating").value,
+    title_en: fid("title_en").value.trim(),
+    title_zh: fid("title_zh").value.trim(),
+    date: fid("date").value.trim(),
+    time: fid("time").value.trim(),
+    doors: fid("doors").value.trim(),
+    daily_cap: fid("daily_cap").value.trim(),
+    venue_en: fid("venue_en").value.trim(),
+    venue_zh: fid("venue_zh").value.trim(),
+    capacity: fid("capacity").value.trim(),
+    map_id: fid("map_id").value.trim(),
+    price_note_en: fid("price_note_en").value.trim(),
+    price_note_zh: fid("price_note_zh").value.trim(),
+    notes: fid("notes").value.trim()
+  };
+  if(!show.id){ showGate($("fgate"),"Please give the show an ID.",false); return; }
+  if(!show.title_en && !show.title_zh){ showGate($("fgate"),"Please give the show a title.",false); return; }
+  this.disabled=true; this.textContent="Saving…";
+  try{
+    var res = await post({ action:"saveShow", pass: AUTH.pass, show: show });
+    if(res && res.ok){ showGate($("fgate"),"Saved.",true); await loadShows(); setTimeout(function(){ showForm(false); }, 500); }
+    else { showGate($("fgate"),"Could not save: "+((res&&res.error)||"unknown"),false); }
+  }catch(e){ showGate($("fgate"),"Could not save (network error).",false); }
+  this.disabled=false; this.textContent="Save show";
+};
+
+$("deleteShow").onclick = async function(){
+  if(!EDIT_ID) return;
+  if(!confirm("Delete this show? This removes the show setup. (In later phases, delete any bookings first.)")) return;
+  this.disabled=true;
+  try{
+    var res = await post({ action:"deleteShow", pass: AUTH.pass, id: EDIT_ID });
+    if(res && res.ok){ await loadShows(); showForm(false); }
+    else { showGate($("fgate"),"Could not delete: "+((res&&res.error)||"unknown"),false); }
+  }catch(e){ showGate($("fgate"),"Could not delete (network error).",false); }
+  this.disabled=false;
+};
+
+/* ---------- resume session ---------- */
+(function(){
+  try{ var a = sessionStorage.getItem("ywb_auth"); if(a){ AUTH = JSON.parse(a); boot(); } }catch(e){}
+})();
+</script>
+</body>
+</html>
