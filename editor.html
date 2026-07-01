@@ -450,7 +450,7 @@ const SCHEMA = {
       {k:"banner_mobile",t:"img",label:"Mobile banner — taller crop for phones (optional; falls back to the banner). Best portrait/square, e.g. 1080×1350."},
       {k:"ticket_image",t:"img",label:"Ticket image — shown on the booking page & printed/e-tickets (optional; blank uses the main image). Best wide, e.g. 2400×1350."},
       {k:"gallery",t:"imgs",label:"Event gallery — one image per line"},
-      {k:"link",t:"text",label:"Ticket / booking link — paste your booking-page URL, e.g. https://yuetwanlondon.com/book/?show=EVENT-ID (blank = email enquiry button)"},
+      {k:"link",t:"booklink",label:"Ticket / booking"},
       {k:"enquire",t:"bool",label:"Also show an “Enquire by email” button (in addition to the booking button)"},
     ]},
   people:{ tab:"People",
@@ -557,6 +557,7 @@ async function boot(){
     $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
     renderAll();
     checkDocUpdates();
+    loadBookShows();
   }catch(e){toast("Could not load data.");}
   busy(false);
 }
@@ -1223,6 +1224,7 @@ function openDrawer(tab,i){
   $("dBody").scrollTop=0;
   $("dBody").querySelectorAll("input[type=file]").forEach(inp=>inp.onchange=()=>onFile(inp));
   $("dBody").querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>openPicker(b.dataset.pick, b.dataset.pmulti==="1"));
+  fillShowPicker();
   if(_hasRich) wireRichBar();
   $("dscrim").classList.add("open"); $("drawer").classList.add("open");
 }
@@ -1244,7 +1246,35 @@ function fieldHTML(f,r){
   if(f.t==="bool") return `<div class="fld"><label class="chk"><input type="checkbox" id="${id}" ${T(r[f.k])?'checked':''}> ${E(f.label)}</label></div>`;
   if(f.t==="img"){ const v=E(r[f.k]); return `<div class="fld"><label>${E(f.label)}</label><div class="imgbox"><div class="pv">${v?`<img id="pv_${f.k}" src="${v}">`:`<span>no image</span>`}</div><div class="ic"><input type="text" id="${id}" value="${v}" placeholder="Image URL (or upload / choose)"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload<input type="file" accept="image/*" data-k="${f.k}" data-multi="0"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="0">Choose existing</button></div></div></div></div>`; }
   if(f.t==="imgs") return `<div class="fld"><label>${E(f.label)}</label><textarea id="${id}" placeholder="One image URL per line">${E(r[f.k])}</textarea><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="btn btn-ghost btn-sm filebtn">Upload &amp; add<input type="file" accept="image/*" multiple data-k="${f.k}" data-multi="1"></span><button type="button" class="btn btn-ghost btn-sm" data-pick="${f.k}" data-pmulti="1">Choose existing</button></div></div>`;
+  if(f.t==="booklink"){ const v=E(r[f.k]);
+    return `<div class="fld"><label>${E(f.label)}</label>`
+      +`<select class="showpick" data-target="${id}" onchange="ywPickShow(this)"><option value="">— choose a booking show —</option></select>`
+      +`<input type="text" id="${id}" value="${v}" placeholder="…/book/?show=ID (or choose a show above)" style="margin-top:8px">`
+      +`<div style="margin-top:5px;color:#8a7f6c;font-size:11.5px;line-height:1.5">Pick one of your booking shows to fill this automatically, or paste a URL. Leave blank for an email-enquiry button.</div></div>`;
+  }
   return `<div class="fld"><label>${E(f.label)}</label><input type="text" id="${id}" value="${E(r[f.k])}"></div>`;
+}
+/* ---------- booking-show picker (lists your on-sale shows from the booking system) ---------- */
+var BOOK_EXEC="https://script.google.com/macros/s/AKfycbylfZEOHp8Zngus5S033z2qdARaZJJg8PaDd2dElqntQYIrn8IzFSE3N1jjfvYX3PNUTQ/exec";
+var BOOK_SHOWS=null;
+async function loadBookShows(){
+  try{ const res=await fetch(BOOK_EXEC,{method:"POST",body:JSON.stringify({action:"book_list"})}); const j=await res.json(); BOOK_SHOWS=(j&&j.ok&&j.shows)?j.shows:[]; }
+  catch(e){ BOOK_SHOWS=[]; }
+  fillShowPicker();
+}
+function ywPickShow(sel){ var id=sel.getAttribute("data-target"); var inp=id?document.getElementById(id):null; if(inp&&sel.value){ inp.value="https://yuetwanlondon.com/book/?show="+sel.value; } }
+function fillShowPicker(){
+  if(!BOOK_SHOWS) return;
+  Array.prototype.forEach.call(document.querySelectorAll("select.showpick"),function(sel){
+    if(sel.getAttribute("data-filled")) return; sel.setAttribute("data-filled","1");
+    var id=sel.getAttribute("data-target"); var inp=id?document.getElementById(id):null; var cur=inp?String(inp.value||""):"";
+    BOOK_SHOWS.forEach(function(s){
+      var opt=document.createElement("option"); opt.value=s.id;
+      opt.textContent=(s.title_en||s.title_zh||s.id)+(s.date?(" · "+s.date):"");
+      if(cur && cur.indexOf("show="+s.id)>-1) opt.selected=true;
+      sel.appendChild(opt);
+    });
+  });
 }
 
 
