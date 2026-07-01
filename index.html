@@ -62,7 +62,7 @@ html.loader-on #yw-pre{display:flex}
 .news input[type=email],.news input[type=text]{border:1px solid var(--line-d);background:rgba(244,236,221,.08);color:var(--paper);border-radius:44px;padding:0 20px;height:52px;box-sizing:border-box;font-size:16px;font-family:var(--serif);width:100%}
 .news input[type=email]::placeholder,.news input[type=text]::placeholder{color:rgba(244,236,221,.5)}
 .news input[type=email]:focus,.news input[type=text]:focus{outline:none;border-color:var(--brass-l)}
-.news .btn{height:52px}
+.news .btn{height:52px;width:100%}
 .news .consent{display:flex;align-items:flex-start;gap:9px;max-width:440px;margin:13px auto 0;text-align:left;cursor:pointer}
 .news .consent input{width:18px;height:18px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--brass-l);cursor:pointer}
 .news .consent span{color:rgba(244,236,221,.72);font-size:13px;line-height:1.5}
@@ -73,7 +73,7 @@ html.loader-on #yw-pre{display:flex}
 @keyframes btnspin{to{transform:rotate(360deg)}}
 .btn.loading{opacity:.9;cursor:default}
 .news .ok{line-height:1.55}
-.news .nf-ts{margin:2px auto 0;display:flex;justify-content:center}
+.news .nf-ts{margin:4px 0 2px}
 .news .ts-msg{color:#e8836b;font-size:13px;margin-top:8px}
 @media(max-width:560px){.news .news-row{flex-direction:column}.news .news-row input,.news .news-row .btn{width:100%;flex:0 0 auto}}
 .slabel .seeall{font-family:var(--grot);font-size:14px;font-weight:600;color:var(--vermilion-d);text-decoration:none;white-space:nowrap}
@@ -187,12 +187,10 @@ html.loader-on #yw-pre{display:flex}
 <p data-en="Be the first to hear about new performances, workshops and ticket releases." data-zh="第一時間獲悉最新演出、工作坊及購票資訊。">Be the first to hear about new performances, workshops and ticket releases.</p>
 <form id="newsForm" onsubmit="return false">
 <input type="text" id="newsName" data-en-ph="Your name (optional)" data-zh-ph="您的稱呼（可選）" placeholder="Your name (optional)">
-<div class="news-row">
 <input type="email" id="newsEmail" data-en-ph="Your email address" data-zh-ph="您的電郵地址" placeholder="Your email address" required>
-<button class="btn btn-fill" id="newsBtn" data-en="Subscribe" data-zh="訂閱">Subscribe</button>
-</div>
-<div class="cf-turnstile nf-ts" data-sitekey="0x4AAAAAADt4UCdsmqqUAC8L" data-theme="dark"></div>
+<div class="cf-turnstile nf-ts" data-sitekey="0x4AAAAAADt4UCdsmqqUAC8L" data-theme="dark" data-size="flexible"></div>
 <div class="ts-msg" id="nfTsMsg" data-en="Please complete the verification above." data-zh="請先完成上方的驗證。" style="display:none"></div>
+<button class="btn btn-fill" id="newsBtn" data-en="Subscribe" data-zh="訂閱">Subscribe</button>
 <input type="text" id="newsHp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="nf-hp">
 </form>
 <label class="consent" id="newsConsent">
