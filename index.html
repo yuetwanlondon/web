@@ -73,6 +73,8 @@ html.loader-on #yw-pre{display:flex}
 @keyframes btnspin{to{transform:rotate(360deg)}}
 .btn.loading{opacity:.9;cursor:default}
 .news .ok{line-height:1.55}
+.news .nf-ts{margin:2px auto 0;display:flex;justify-content:center}
+.news .ts-msg{color:#e8836b;font-size:13px;margin-top:8px}
 @media(max-width:560px){.news .news-row{flex-direction:column}.news .news-row input,.news .news-row .btn{width:100%;flex:0 0 auto}}
 .slabel .seeall{font-family:var(--grot);font-size:14px;font-weight:600;color:var(--vermilion-d);text-decoration:none;white-space:nowrap}
 .slabel .seeall:hover{color:var(--vermilion)}
@@ -88,7 +90,7 @@ html.loader-on #yw-pre{display:flex}
 .hncard p{font-size:14.5px;color:var(--ink-80);line-height:1.6;margin:8px 0 0;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .hncard .go{font-family:var(--grot);font-size:13px;font-weight:600;color:var(--vermilion-d);margin-top:14px}
 @media(max-width:860px){.hnews-grid{grid-template-columns:1fr}}
-</style></head><body>
+</style><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></head><body>
 
 <div id="yw-pre"><div class="pre-inner"><img class="pre-logo" src="/img/yuetwanlondon-main.svg" alt="Yuet Wan London"><div class="ring"><img id="yw-pre-gif" src="/img/pre-load-1.gif" alt=""></div></div></div>
 <script>
@@ -189,6 +191,8 @@ html.loader-on #yw-pre{display:flex}
 <input type="email" id="newsEmail" data-en-ph="Your email address" data-zh-ph="您的電郵地址" placeholder="Your email address" required>
 <button class="btn btn-fill" id="newsBtn" data-en="Subscribe" data-zh="訂閱">Subscribe</button>
 </div>
+<div class="cf-turnstile nf-ts" data-sitekey="0x4AAAAAADt4UCdsmqqUAC8L" data-theme="dark"></div>
+<div class="ts-msg" id="nfTsMsg" data-en="Please complete the verification above." data-zh="請先完成上方的驗證。" style="display:none"></div>
 <input type="text" id="newsHp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="nf-hp">
 </form>
 <label class="consent" id="newsConsent">
@@ -333,8 +337,12 @@ document.getElementById("newsBtn").onclick=async function(){
  if(!ag.checked){cs.classList.add("err");return;}
  function done(){ document.getElementById("newsForm").style.display="none"; cs.style.display="none"; document.getElementById("newsOk").style.display="block"; }
  if((hp&&hp.value)||(Date.now()-window.__nfStart<1500)){ done(); return; }   // honeypot or instant submit -> ignore
+ var tsTok=""; try{ if(window.turnstile) tsTok=turnstile.getResponse()||""; }catch(e){}
+ if(window.turnstile && !tsTok){ document.getElementById("nfTsMsg").style.display="block"; return; }
+ document.getElementById("nfTsMsg").style.display="none";
  btn.disabled=true; btn.classList.add("loading"); btn.innerHTML='<span class="btn-spin" aria-hidden="true"></span>'+(lang==="zh"?"訂閱中…":"Subscribing…");
- try{await YW.post({action:"subscribe",email:em.value.trim(),name:nm.value.trim(),lang:lang,consent:true,hp:""});}catch(e){}
+ var res=null; try{res=await YW.post({action:"subscribe",email:em.value.trim(),name:nm.value.trim(),lang:lang,consent:true,hp:"",cfToken:tsTok});}catch(e){}
+ if(res&&res.ok===false&&res.error==="captcha"){ if(window.turnstile)turnstile.reset(); document.getElementById("nfTsMsg").style.display="block"; btn.disabled=false; btn.classList.remove("loading"); btn.innerHTML=(lang==="zh"?"訂閱":"Subscribe"); return; }
  done();
 };
 document.getElementById("newsAgree").addEventListener("change",function(){document.getElementById("newsConsent").classList.remove("err");});

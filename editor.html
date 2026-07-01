@@ -978,8 +978,8 @@ function drawAudience(host){
         +'<button class="aud-mini danger" data-subremove="'+E(s.Email)+'">Remove</button>'
       +'</td></tr>';
   }).join("");
-  var conRows=cons.map(function(c){
-    return '<div class="aud-con"><div class="aud-con-h"><span class="aud-nm">'+E(c.Name||"—")+'</span><a href="mailto:'+E(c.Email||"")+'" class="aud-em">'+E(c.Email||"")+'</a><span class="aud-date">'+E(c.Timestamp||"")+'</span></div>'
+  var conRows=cons.map(function(c,i){
+    return '<div class="aud-con"><div class="aud-con-h"><span class="aud-nm">'+E(c.Name||"—")+'</span><a href="mailto:'+E(c.Email||"")+'" class="aud-em">'+E(c.Email||"")+'</a><span class="aud-date">'+E(c.Timestamp||"")+'</span><button class="aud-mini danger" data-conrm="'+i+'" style="margin-left:8px">Delete</button></div>'
       +(c.Message?'<div class="aud-msgtxt">'+E(c.Message)+'</div>':'')+'</div>';
   }).join("");
   host.innerHTML=
@@ -993,6 +993,7 @@ function drawAudience(host){
   $("audExpCons").onclick=function(){ downloadCsv("contacts.csv", csvOf(cons,["Timestamp","Name","Email","Message"])); };
   host.querySelectorAll("[data-substatus]").forEach(function(b){ b.onclick=function(){ audSetStatus(b.dataset.substatus); }; });
   host.querySelectorAll("[data-subremove]").forEach(function(b){ b.onclick=function(){ audRemove(b.dataset.subremove); }; });
+  host.querySelectorAll("[data-conrm]").forEach(function(b){ b.onclick=function(){ audRemoveContact(parseInt(b.dataset.conrm,10)); }; });
 }
 async function audSetStatus(payload){
   var i=payload.lastIndexOf("|"); var email=payload.slice(0,i), status=payload.slice(i+1);
@@ -1006,6 +1007,14 @@ async function audRemove(email){
   try{
     var res=await YW.post({action:"subRemove",pass:AUTH.pass,email:email});
     if(res&&res.ok){ AUD.subscribers=(AUD.subscribers||[]).filter(function(s){return String(s.Email).toLowerCase()!==email.toLowerCase();}); drawAudience($("s_audience")); }
+  }catch(e){}
+}
+async function audRemoveContact(i){
+  var c=(AUD.contacts||[])[i]; if(!c) return;
+  if(!confirm("Delete this enquiry from "+(c.Name||c.Email||"this person")+"? This removes it from the sheet.")) return;
+  try{
+    var res=await YW.post({action:"conRemove",pass:AUTH.pass,email:c.Email,message:c.Message});
+    if(res&&res.ok){ AUD.contacts.splice(i,1); drawAudience($("s_audience")); }
   }catch(e){}
 }
 function csvOf(rows,cols){

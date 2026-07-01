@@ -56,6 +56,8 @@ html.loader-on #yw-pre{display:flex}
 .btn-spin{display:inline-block;width:15px;height:15px;margin-right:9px;vertical-align:-2px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:btnspin .6s linear infinite}
 @keyframes btnspin{to{transform:rotate(360deg)}}
 .btn.loading{opacity:.9;cursor:default}
+.cf-ts{margin:2px 0 8px}
+.ts-msg{color:var(--vermilion,#c0392b);font-size:13px;margin:0 0 8px}
 .creach{background:var(--mist);border:1px solid var(--line);border-radius:20px;padding:clamp(24px,3vw,32px)}
 .creach .it{display:flex;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)}
 .creach .it:last-child{border-bottom:none}
@@ -64,7 +66,7 @@ html.loader-on #yw-pre{display:flex}
 .creach .k{font-family:var(--grot);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-55)}
 .creach .v{font-size:15.5px;font-weight:600;margin-top:2px}.creach .v a:hover{color:var(--vermilion-d)}
 @media(max-width:860px){.clayout{grid-template-columns:1fr}}
-</style></head><body>
+</style><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></head><body>
 
 <div id="yw-pre"><div class="pre-inner"><img class="pre-logo" src="/img/yuetwanlondon-main.svg" alt="Yuet Wan London"><div class="ring"><img id="yw-pre-gif" alt=""></div></div></div>
 <script>
@@ -128,6 +130,8 @@ html.loader-on #yw-pre{display:flex}
 <div class="fld"><label data-en="Email address" data-zh="電郵地址">Email address</label><input type="email" id="f_email" data-gf="email" required></div>
 <div class="fld"><label data-en="Message" data-zh="您的訊息">Message</label><textarea id="f_msg" data-gf="message"></textarea></div>
 <label class="copt"><input type="checkbox" id="c_sub"><span data-en="Also subscribe me to the newsletter for events and updates." data-zh="同時訂閱電郵通訊，接收活動及最新消息。">Also subscribe me to the newsletter for events and updates.</span></label>
+<div class="cf-turnstile cf-ts" data-sitekey="0x4AAAAAADt4UCdsmqqUAC8L" data-theme="light"></div>
+<div class="ts-msg" id="cfTsMsg" data-en="Please complete the verification above." data-zh="請先完成上方的驗證。" style="display:none"></div>
 <input type="text" id="c_hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="nf-hp">
 <button class="btn btn-fill" id="csend" data-en="Send message" data-zh="送出訊息">Send message</button>
 </div>
@@ -187,10 +191,14 @@ function submitContact(){
  const btn=document.getElementById("csend");
  var sub=document.getElementById("c_sub");
  var clang=(YW.loadLang&&YW.loadLang()==="zh")?"zh":"en";
+ var tsTok=""; try{ if(window.turnstile) tsTok=turnstile.getResponse()||""; }catch(e){}
+ if(window.turnstile && !tsTok){ document.getElementById("cfTsMsg").style.display="block"; return; }
+ document.getElementById("cfTsMsg").style.display="none";
  btn.dataset.orig=btn.innerHTML; btn.disabled=true; btn.classList.add("loading"); btn.innerHTML='<span class="btn-spin" aria-hidden="true"></span>'+(clang==="zh"?"傳送中…":"Sending…");
  function reset(){ btn.disabled=false; btn.classList.remove("loading"); btn.innerHTML=btn.dataset.orig; }
- YW.post({action:"contact",name:name.value,email:email.value,message:msg.value,hp:"",subscribe:!!(sub&&sub.checked),lang:clang}).then(function(res){
+ YW.post({action:"contact",name:name.value,email:email.value,message:msg.value,hp:"",subscribe:!!(sub&&sub.checked),lang:clang,cfToken:tsTok}).then(function(res){
    if(res&&res.ok){ document.querySelector(".cform-in").style.display="none"; document.getElementById("csent").classList.add("show"); }
+   else if(res&&res.error==="captcha"){ reset(); if(window.turnstile)turnstile.reset(); document.getElementById("cfTsMsg").style.display="block"; }
    else { reset(); alert("Could not send — the server replied: "+(res&&res.error||"no response")+". If it says 'unknown action', the Apps Script needs to be re-deployed as a New version."); }
  }).catch(function(){ reset(); alert("Sorry — could not reach the server. Please email yuetwanlondon@gmail.com directly."); });
 }
