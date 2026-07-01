@@ -149,6 +149,38 @@ select.nl-in{appearance:auto}
 .settoggle .track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
 .settoggle input:checked + .track::after{transform:translateX(20px)}
 .settoggle .lab{font-family:var(--grot);font-size:13px;font-weight:700;color:var(--ink-80)}
+.aud-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.aud-stats{font-size:14px;color:var(--ink-80)}
+.aud-stats b{font-size:18px}
+.aud-on{color:#2e7e72;font-weight:600}
+.aud-off{color:#9a8e79}
+.aud-btns{display:flex;gap:8px}
+.aud-btn{border:1px solid var(--line);background:#fff;color:var(--ink-80);border-radius:40px;padding:8px 16px;font-size:13px;font-family:var(--grot);font-weight:600;cursor:pointer}
+.aud-btn:hover{border-color:var(--brass)}
+.aud-tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.aud-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.aud-table th{text-align:left;font-family:var(--grot);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-55);padding:11px 12px;border-bottom:1px solid var(--line);background:var(--mist);white-space:nowrap}
+.aud-table td{padding:11px 12px;border-bottom:1px solid var(--line-2,#EFEAE0);vertical-align:middle}
+.aud-table tbody tr:last-child td{border-bottom:none}
+.aud-nm{font-weight:600;color:var(--ink)}
+.aud-em{color:var(--ink-55);font-size:12.5px;text-decoration:none}
+.aud-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.aud-badge.on{background:rgba(46,126,114,.14);color:#2e7e72}
+.aud-badge.off{background:rgba(154,142,121,.18);color:#8a7d68}
+.aud-act{white-space:nowrap;display:flex;gap:6px}
+.aud-mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-family:var(--grot);cursor:pointer;color:var(--ink-80)}
+.aud-mini:hover{border-color:var(--brass)}
+.aud-mini.danger{color:#9a2f28}
+.aud-mini.danger:hover{border-color:#9a2f28;background:rgba(154,47,40,.06)}
+.aud-h2{display:flex;justify-content:space-between;align-items:center;margin:30px 0 12px}
+.aud-h2 h3{margin:0;font-size:16px;font-family:var(--grot)}
+.aud-conlist{display:flex;flex-direction:column;gap:10px}
+.aud-con{border:1px solid var(--line);border-radius:11px;padding:13px 15px;background:#fff}
+.aud-con-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.aud-date{margin-left:auto;color:var(--ink-55);font-size:12px}
+.aud-msgtxt{margin-top:7px;font-size:14px;line-height:1.55;color:var(--ink-80);white-space:pre-wrap}
+.aud-msg{padding:24px;text-align:center;color:var(--ink-55);font-size:14px}
+
 .abrow{display:grid;grid-template-columns:190px 1fr;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line-2,#EFEAE0);align-items:start}
 .abrow:last-child{border-bottom:none}
 .abrow .k{font-family:var(--grot);font-size:12.5px;font-weight:700;color:var(--ink-80);padding-top:6px}
@@ -693,7 +725,7 @@ function renderSettings(host){
 }
 
 /* ---------- master render ---------- */
-const PANES=["hero","events","gallery","people","learn","news","newsletter","about","social","settings"];
+const PANES=["hero","events","gallery","people","learn","news","newsletter","audience","about","social","settings"];
 let ACTIVE_PANE=(function(){ try{ var v=sessionStorage.getItem("yw_pane"); return PANES.indexOf(v)>=0?v:"events"; }catch(e){ return "events"; } })();
 function showPane(name){
   if(PANES.indexOf(name)<0) name="events";
@@ -912,10 +944,89 @@ function renderNewsletter(host){
   updatePreview();
 }
 
+/* ---------- audience: subscribers + contacts (private, admin-only) ---------- */
+var AUD=null;
+function renderAudience(host){
+  if(!host) return;
+  if(AUD){ drawAudience(host); return; }
+  host.innerHTML='<div class="aud-msg">Loading subscribers &amp; contacts…</div>';
+  loadAudience(host);
+}
+async function loadAudience(host){
+  try{
+    var res=await YW.post({action:"audience",pass:AUTH.pass});
+    if(res&&res.ok){ AUD={subscribers:res.subscribers||[],contacts:res.contacts||[]}; drawAudience(host); }
+    else host.innerHTML='<div class="aud-msg">Could not load audience'+((res&&res.error)?" ("+res.error+")":"")+'.</div>';
+  }catch(e){ host.innerHTML='<div class="aud-msg">Could not reach the server.</div>'; }
+}
+function audRefresh(){ AUD=null; renderAudience($("s_audience")); }
+function audBadge(s){ var u=String(s.Status||"").toLowerCase()==="unsubscribed"; return '<span class="aud-badge '+(u?"off":"on")+'">'+(u?"unsubscribed":"active")+'</span>'; }
+function drawAudience(host){
+  var subs=AUD.subscribers||[], cons=AUD.contacts||[];
+  var active=subs.filter(function(s){return String(s.Status||"").toLowerCase()!=="unsubscribed";}).length;
+  var unsub=subs.length-active;
+  var subRows=subs.map(function(s){
+    var off=String(s.Status||"").toLowerCase()==="unsubscribed";
+    return '<tr>'
+      +'<td><div class="aud-nm">'+E(s.Name||"—")+'</div><div class="aud-em">'+E(s.Email||"")+'</div></td>'
+      +'<td>'+E(String(s.Language||"").toUpperCase())+'</td>'
+      +'<td>'+audBadge(s)+'</td>'
+      +'<td>'+E(s.Source||"")+'</td>'
+      +'<td>'+E(s.Timestamp||"")+'</td>'
+      +'<td class="aud-act">'
+        +'<button class="aud-mini" data-substatus="'+E(s.Email)+'|'+(off?"active":"unsubscribed")+'">'+(off?"Reactivate":"Unsubscribe")+'</button>'
+        +'<button class="aud-mini danger" data-subremove="'+E(s.Email)+'">Remove</button>'
+      +'</td></tr>';
+  }).join("");
+  var conRows=cons.map(function(c){
+    return '<div class="aud-con"><div class="aud-con-h"><span class="aud-nm">'+E(c.Name||"—")+'</span><a href="mailto:'+E(c.Email||"")+'" class="aud-em">'+E(c.Email||"")+'</a><span class="aud-date">'+E(c.Timestamp||"")+'</span></div>'
+      +(c.Message?'<div class="aud-msgtxt">'+E(c.Message)+'</div>':'')+'</div>';
+  }).join("");
+  host.innerHTML=
+    '<div class="aud-bar"><div class="aud-stats"><b>'+subs.length+'</b> subscribers · <span class="aud-on">'+active+' active</span> · <span class="aud-off">'+unsub+' unsubscribed</span></div>'
+      +'<div class="aud-btns"><button class="aud-btn" id="audExpSubs">Export CSV</button><button class="aud-btn" id="audRefresh">Refresh</button></div></div>'
+    +(subs.length?'<div class="aud-tablewrap"><table class="aud-table"><thead><tr><th>Subscriber</th><th>Lang</th><th>Status</th><th>Source</th><th>Joined</th><th></th></tr></thead><tbody>'+subRows+'</tbody></table></div>':'<div class="aud-msg">No subscribers yet.</div>')
+    +'<div class="aud-h2"><h3>Contact enquiries</h3><div class="aud-btns"><button class="aud-btn" id="audExpCons">Export CSV</button></div></div>'
+    +(cons.length?'<div class="aud-conlist">'+conRows+'</div>':'<div class="aud-msg">No enquiries yet.</div>');
+  $("audRefresh").onclick=audRefresh;
+  $("audExpSubs").onclick=function(){ downloadCsv("subscribers.csv", csvOf(subs,["Timestamp","Email","Name","Language","Status","Source","Consent","Unsubscribed","LastSent"])); };
+  $("audExpCons").onclick=function(){ downloadCsv("contacts.csv", csvOf(cons,["Timestamp","Name","Email","Message"])); };
+  host.querySelectorAll("[data-substatus]").forEach(function(b){ b.onclick=function(){ audSetStatus(b.dataset.substatus); }; });
+  host.querySelectorAll("[data-subremove]").forEach(function(b){ b.onclick=function(){ audRemove(b.dataset.subremove); }; });
+}
+async function audSetStatus(payload){
+  var i=payload.lastIndexOf("|"); var email=payload.slice(0,i), status=payload.slice(i+1);
+  try{
+    var res=await YW.post({action:"subStatus",pass:AUTH.pass,email:email,status:status});
+    if(res&&res.ok){ (AUD.subscribers||[]).forEach(function(s){ if(String(s.Email).toLowerCase()===email.toLowerCase()){ s.Status=status; s.Unsubscribed=(status==="unsubscribed")?new Date().toISOString().slice(0,10):""; } }); drawAudience($("s_audience")); }
+  }catch(e){}
+}
+async function audRemove(email){
+  if(!confirm("Remove "+email+" from the list permanently? This deletes their row from the sheet.")) return;
+  try{
+    var res=await YW.post({action:"subRemove",pass:AUTH.pass,email:email});
+    if(res&&res.ok){ AUD.subscribers=(AUD.subscribers||[]).filter(function(s){return String(s.Email).toLowerCase()!==email.toLowerCase();}); drawAudience($("s_audience")); }
+  }catch(e){}
+}
+function csvOf(rows,cols){
+  function esc(v){ return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'; }
+  var out=[cols.map(esc).join(",")];
+  (rows||[]).forEach(function(r){ out.push(cols.map(function(c){return esc(r[c]);}).join(",")); });
+  return out.join("\r\n");
+}
+function downloadCsv(name,csv){
+  try{
+    var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },120);
+  }catch(e){}
+}
+
 function renderAll(){
   $("langItemTxt").textContent = LANG==="en" ? "中文 preview" : "EN preview";
   $("canvas").innerHTML=`
-    <nav class="enav" id="enav"><button data-go="hero">Hero</button><button data-go="events">Events</button><button data-go="gallery">Gallery</button><button data-go="people">People</button><button data-go="learn">Learn</button><button data-go="news">News</button><button data-go="newsletter">Newsletter</button><button data-go="about">About</button><button data-go="social">Social</button><button data-go="settings">Settings</button></nav>
+    <nav class="enav" id="enav"><button data-go="hero">Hero</button><button data-go="events">Events</button><button data-go="gallery">Gallery</button><button data-go="people">People</button><button data-go="learn">Learn</button><button data-go="news">News</button><button data-go="newsletter">Newsletter</button><button data-go="audience">Audience</button><button data-go="about">About</button><button data-go="social">Social</button><button data-go="settings">Settings</button></nav>
     <div class="pane" data-pane="hero"><div class="sec-wrap first"><div class="slabel"><h2>Hero</h2><span class="ln"></span><span class="sub">首頁橫幅</span></div><div id="s_hero"></div><button class="addbtn" data-add="hero">+ Add hero slide</button></div>
     </div>
     <div class="pane" data-pane="events"><div class="sec-wrap"><div class="slabel"><h2>What's On</h2><span class="ln"></span><span class="sub">即將舉行</span></div><div id="s_up"></div><button class="addbtn" data-add="events" data-status="upcoming">+ Add event</button></div>
@@ -931,6 +1042,8 @@ function renderAll(){
     </div>
     <div class="pane" data-pane="newsletter"><div class="sec-wrap"><div class="slabel"><h2>Newsletter</h2><span class="ln"></span><span class="sub">電郵通訊 · compose &amp; preview</span></div><div id="s_newsletter"></div></div>
     </div>
+    <div class="pane" data-pane="audience"><div class="sec-wrap"><div class="slabel"><h2>Audience</h2><span class="ln"></span><span class="sub">訂閱者及查詢 · subscribers &amp; enquiries</span></div><div id="s_audience"></div></div>
+    </div>
     <div class="pane" data-pane="about"><div class="sec-wrap"><div class="slabel"><h2>About page</h2><span class="ln"></span><span class="sub">關於我們 · page text</span></div><div id="s_about"></div></div>
     </div>
     <div class="pane" data-pane="social"><div class="sec-wrap"><div class="slabel"><h2>Social</h2><span class="ln"></span><span class="sub">社交連結 · footer icons</span></div><div id="s_social"></div><button class="addbtn" data-add="social">+ Add social link</button></div>
@@ -939,7 +1052,7 @@ function renderAll(){
     </div>
     <div style="height:60px"></div>`;
   renderHero($("s_hero")); renderEventsGrid($("s_up"),"upcoming"); renderEventsGrid($("s_past"),"past");
-  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set")); renderNewsletter($("s_newsletter"));
+  renderGallery($("s_gal")); renderPeople($("s_ppl")); renderPosts($("s_learn"),"learn"); renderPosts($("s_news"),"news"); renderSocialEditor($("s_social")); renderAbout($("s_about")); renderSettings($("s_set")); renderNewsletter($("s_newsletter")); renderAudience($("s_audience"));
   showPane(ACTIVE_PANE);
 }
 
