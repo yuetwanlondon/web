@@ -754,6 +754,24 @@ function nlLatestArticles(n){
   return a.slice(0,Math.max(0,n));
 }
 function nlEsc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function nlPlain(html){
+  if(html==null) return "";
+  var s=String(html);
+  if(s.indexOf("<")<0 && s.indexOf("&")<0) return nlEsc(s);
+  var d=document.createElement("div");
+  d.innerHTML=s.replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|li)>/gi,"\n");
+  var txt=(d.textContent||"").replace(/\u00a0/g," ").replace(/\n{2,}/g,"\n").replace(/[ \t]+/g," ").replace(/^\n+|\n+$/g,"").trim();
+  return nlEsc(txt).replace(/\n/g,"<br>");
+}
+function nlSocialLinks(){
+  var names={facebook:"Facebook",instagram:"Instagram",youtube:"YouTube",rednote:"Rednote",whatsapp:"WhatsApp",x:"X",tiktok:"TikTok",linkedin:"LinkedIn",pinterest:"Pinterest"};
+  var list=(DATA.social||[]).slice().sort(function(a,b){return (+a.order||0)-(+b.order||0);});
+  var links=list.filter(function(s){return s.url&&names[String(s.platform||"").toLowerCase()];}).map(function(s){
+    return '<a href="'+nlEsc(s.url)+'" style="color:#c9a45e;text-decoration:none;font-size:12.5px;letter-spacing:.04em">'+names[String(s.platform).toLowerCase()]+'</a>';
+  });
+  if(!links.length) return "";
+  return '<div style="margin:0 0 15px">'+links.join('<span style="color:#5a5040">&nbsp;&nbsp;·&nbsp;&nbsp;</span>')+'</div>';
+}
 
 // Bulletproof-ish email button (works in Gmail/Apple Mail/Outlook)
 function nlBtn(url,label){
@@ -769,9 +787,9 @@ function nlEventCard(e,lang){
     : {date:"Date",time:"Time",venue:"Venue",price:"Price",cta:"View &amp; book →"};
   var t = nlEsc(lang==="zh"?(e.title_zh||e.title_en):(e.title_en||e.title_zh));
   var dt= nlEsc(e.date_label||e.date_start||"");
-  var tm= nlEsc(lang==="zh"?(e.time_zh||e.time_en):(e.time_en||e.time_zh));
-  var vn= nlEsc(lang==="zh"?(e.venue_zh||e.venue_en):(e.venue_en||e.venue_zh));
-  var pr= nlEsc(lang==="zh"?(e.price_zh||e.price_en):(e.price_en||e.price_zh));
+  var tm= nlPlain(lang==="zh"?(e.time_zh||e.time_en):(e.time_en||e.time_zh));
+  var vn= nlPlain(lang==="zh"?(e.venue_zh||e.venue_en):(e.venue_en||e.venue_zh));
+  var pr= nlPlain(lang==="zh"?(e.price_zh||e.price_en):(e.price_en||e.price_zh));
   var url="https://yuetwanlondon.com/event/?id="+encodeURIComponent(e.id||"");
   var img=e.image?'<tr><td style="padding:0"><img src="'+nlEsc(e.image)+'" width="600" style="width:100%;max-width:600px;display:block;border:0" alt=""></td></tr>':"";
   function row(lbl,val){ return val?'<tr><td style="padding:2px 0;font-size:13px;color:#5b4f3f;line-height:1.5"><span style="color:#b8893c;font-weight:700">'+lbl+':</span> '+val+'</td></tr>':""; }
@@ -823,20 +841,22 @@ function buildCampaignEmail(o){
   else if(mode==="zh") inner=block("zh");
   else inner=block("en")+'<div style="border-top:1px solid #e2d4ba;margin:32px 0 26px"></div>'+block("zh");
   var fUns=(mode==="zh")?"取消訂閱":(mode==="en")?"Unsubscribe":"Unsubscribe · 取消訂閱";
-  var wordmark2=(mode==="en")?"":'<div style="font-size:14px;color:#e7dcc6;margin-top:3px">倫敦粵韻曲藝文化協會</div>';
+  var wordmark2='<div style="font-size:14px;color:#e7dcc6;margin-top:4px;letter-spacing:.08em">倫敦粵韻曲藝文化協會</div>';
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"></head>'
-    +'<body style="margin:0;padding:0;background:#f1e8d6;font-family:Georgia,serif;color:#2b2118;-webkit-text-size-adjust:100%">'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1e8d6"><tr><td align="center" style="padding:0">'
-    +'<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;margin:0 auto;background:#fffaf0">'
-      +'<tr><td align="center" style="background:#16130f;padding:26px 24px 22px">'
-        +'<img src="'+NL_LOGO+'" width="172" alt="Yuet Wan London" style="display:block;margin:0 auto 13px;border:0;height:auto">'
-        +'<div style="font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#c9a45e">Yuet Wan London</div>'
+    +'<body style="margin:0;padding:0;background:#ece2cf;font-family:Georgia,serif;color:#2b2118;-webkit-text-size-adjust:100%">'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ece2cf"><tr><td align="center" style="padding:26px 12px">'
+    +'<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;margin:0 auto;background:#fffaf0;border-top:3px solid #b8893c">'
+      +'<tr><td align="center" style="background:#16130f;padding:32px 24px 26px">'
+        +'<img src="'+NL_LOGO+'" width="164" alt="Yuet Wan London" style="display:block;margin:0 auto 15px;border:0;height:auto">'
+        +'<div style="font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:#c9a45e">Yuet Wan London</div>'
         +wordmark2
       +'</td></tr>'
-      +'<tr><td style="padding:30px 26px 14px">'+inner+'</td></tr>'
-      +'<tr><td align="center" style="background:#16130f;padding:24px;color:#b3a892;font-size:12px;line-height:1.7">'
-        +'Yuet Wan London · 倫敦粵韻曲藝文化協會<br>London, United Kingdom · yuetwanlondon@gmail.com<br>'
-        +'<a href="'+unsub+'" style="color:#c9a45e;text-decoration:underline">'+fUns+'</a>'
+      +'<tr><td style="padding:36px 34px 18px;font-size:15.5px;line-height:1.78">'+inner+'</td></tr>'
+      +'<tr><td align="center" style="background:#16130f;padding:26px 24px 28px;color:#a99e88;font-size:12px;line-height:1.7">'
+        +nlSocialLinks()
+        +'<div style="color:#e7dcc6;font-size:13px;letter-spacing:.03em">Yuet Wan London · 倫敦粵韻曲藝文化協會</div>'
+        +'<div style="margin-top:5px">London, United Kingdom · yuetwanlondon@gmail.com</div>'
+        +'<div style="margin-top:10px"><a href="'+unsub+'" style="color:#8f836c;text-decoration:underline">'+fUns+'</a></div>'
       +'</td></tr>'
     +'</table></td></tr></table></body></html>';
 }
