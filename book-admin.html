@@ -90,6 +90,52 @@ textarea.in{min-height:74px;resize:vertical}
 .hint{font-size:11.5px;color:var(--ink-55);margin-top:5px;line-height:1.45}
 .soon{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--brass);background:#fbf3e5;border-radius:20px;padding:2px 9px;margin-left:8px}
 @media(max-width:560px){.two{grid-template-columns:1fr}.show{flex-direction:column}.show .acts{flex-direction:row}}
+
+/* section nav */
+.secnav{display:flex;gap:8px;margin-bottom:18px}
+.secnav button{font-family:var(--grot);font-size:13.5px;font-weight:600;color:var(--ink-55);background:#fff;border:1px solid var(--line);border-radius:30px;padding:9px 17px;cursor:pointer}
+.secnav button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* designer head */
+.dhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.dhead-r{display:flex;gap:8px}
+
+/* floor tabs */
+.floors{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:16px 0 6px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.floors .ft{font-family:var(--grot);font-size:13px;font-weight:600;color:var(--ink-55);background:#f3ede1;border:1px solid var(--line);border-radius:9px;padding:7px 13px;cursor:pointer}
+.floors .ft.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.floors .ficon{background:none;border:1px dashed var(--line);border-radius:9px;padding:7px 11px;color:var(--ink-55);font-size:13px}
+
+/* toolbars */
+.tbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.tgroup{display:inline-flex;gap:5px;flex-wrap:wrap;align-items:center}
+.ton{font-family:var(--grot);font-size:12.5px;font-weight:600;color:var(--ink-80);background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ton.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lbl{font-size:11.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-55)}
+.in.mini{width:64px;padding:8px 9px;font-size:14px}
+.in.mini2{width:auto;padding:8px 9px;font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--grot);font-size:12.5px;font-weight:600;color:var(--ink-80);background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer}
+.chip.on{outline:2px solid var(--ink);outline-offset:1px}
+.chip .sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+.chip .x{margin-left:2px;color:var(--ink-55);font-weight:700;font-size:13px;background:none;border:none;cursor:pointer;padding:0 2px}
+
+/* grid */
+.gridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:#faf6ee;padding:14px}
+.seatgrid{display:inline-grid;gap:3px;user-select:none;touch-action:pan-x pan-y}
+.grow{display:contents}
+.rowlab{font-size:11px;font-weight:700;color:var(--ink-55);display:flex;align-items:center;justify-content:center;min-width:20px}
+.scell{width:22px;height:22px;border-radius:5px;cursor:pointer;box-sizing:border-box}
+.scell.empty{background:transparent;border:1px dashed rgba(22,19,15,.16)}
+.scell.blocked{background:repeating-linear-gradient(45deg,#d8cfbf,#d8cfbf 3px,#c8bda6 3px,#c8bda6 6px);border:1px solid #bfb49c}
+.scell.seat{border:1px solid rgba(0,0,0,.14)}
+.scell.wc{box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 4px rgba(0,0,0,.25)}
+
+/* stats + legend */
+.dstats{font-size:12.5px;color:var(--ink-55);margin-top:12px;line-height:1.6}
+.dstats b{color:var(--ink-80)}
+.leg{display:inline-flex;align-items:center;gap:5px;margin-right:14px}
+.leg .sw{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+
 </style>
 </head>
 <body>
@@ -118,6 +164,11 @@ textarea.in{min-height:74px;resize:vertical}
   <div class="wrap">
     <div class="note" id="conn">Connecting to the booking backend…</div>
 
+    <div class="secnav" id="secnav">
+      <button data-sec="shows" class="on">Shows</button>
+      <button data-sec="maps">Seat maps</button>
+    </div>
+    <div id="showsArea">
     <!-- list view -->
     <div id="listView">
       <div class="rowhead">
@@ -175,7 +226,7 @@ textarea.in{min-height:74px;resize:vertical}
 
         <div class="two">
           <div><label class="f">Capacity <span style="text-transform:none;color:var(--ink-55)">(total seats)</span></label><input class="in" id="f_capacity" type="number" min="0" placeholder="200"></div>
-          <div><label class="f">Seat map <span class="soon">Next phase</span></label><input class="in" id="f_map_id" placeholder="(built in Phase 2)" disabled></div>
+          <div><label class="f">Seat map</label><select class="in" id="f_map_id"><option value="">— none / general admission —</option></select><div class="hint">Pick a venue built under “Seat maps”. Prices per section are set next.</div></div>
         </div>
 
         <label class="f">Price note — English <span style="text-transform:none;color:var(--ink-55)">(shown to buyers; payment is arranged with you)</span></label>
@@ -194,6 +245,68 @@ textarea.in{min-height:74px;resize:vertical}
         </div>
       </div>
     </div>
+    </div>
+<div id="mapsArea" class="hidden">
+  <!-- list -->
+  <div id="mapsListView">
+    <div class="rowhead">
+      <h2>Seat maps</h2>
+      <button class="btn primary sm" id="newMap">+ New map</button>
+    </div>
+    <div class="note">Design a venue once, then any show can use it. Paint seats onto the grid, group them into coloured sections (you set the price per section on each show), and mark wheelchair spaces. Add a second floor with <b>+ Floor</b> if the venue has one.</div>
+    <div id="mapList" class="grid"></div>
+  </div>
+
+  <!-- designer -->
+  <div id="mapDesigner" class="hidden">
+    <div class="panel">
+      <div class="dhead">
+        <input class="in" id="m_name" placeholder="Venue name (e.g. Shaw Theatre)" style="max-width:340px">
+        <div class="dhead-r">
+          <button class="btn ghost sm" id="mapBack">← Maps</button>
+          <button class="btn primary sm" id="saveMap">Save map</button>
+        </div>
+      </div>
+      <div class="hint" id="m_idhint"></div>
+
+      <div class="floors" id="floorTabs"></div>
+
+      <div class="tbar">
+        <div class="tgroup" id="toolGroup">
+          <button data-tool="seat" class="ton on">Seat</button>
+          <button data-tool="wheelchair" class="ton">Wheelchair</button>
+          <button data-tool="empty" class="ton">Empty</button>
+          <button data-tool="blocked" class="ton">Blocked</button>
+        </div>
+        <span class="lbl" style="margin-left:6px">into</span>
+        <div class="tgroup" id="sectionChips"></div>
+        <button class="btn ghost sm" id="addSection">+ Section</button>
+      </div>
+
+      <div class="tbar">
+        <span class="lbl">Rows</span><input class="in mini" id="m_rows" type="number" min="1" max="60">
+        <span class="lbl">Cols</span><input class="in mini" id="m_cols" type="number" min="1" max="80">
+        <button class="btn ghost sm" id="applySize">Apply size</button>
+        <span class="lbl" style="margin-left:6px">Row A at</span>
+        <select class="in mini2" id="m_labelfrom">
+          <option value="bottom">Bottom (near stage)</option>
+          <option value="top">Top</option>
+        </select>
+      </div>
+
+      <div class="gridwrap"><div id="seatGrid" class="seatgrid"></div></div>
+      <div class="dstats" id="mapStats"></div>
+
+      <div class="gate hidden" id="mgate"></div>
+      <div class="formfoot">
+        <button class="btn primary" id="saveMap2">Save map</button>
+        <button class="btn ghost" id="mapBack2">Back to maps</button>
+        <button class="btn danger sm" id="deleteMap" style="margin-left:auto">Delete map</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   </div>
 </div>
 
@@ -243,7 +356,7 @@ async function boot(){
     if(s && s.ok){ $("conn").innerHTML = 'Connected · backend '+s.version+' · '+s.shows+' show(s) so far. <span style="color:var(--ink-55)">Phase 1 — Shows. Seat maps, the buyer booking page and check-in come next.</span>'; }
     else { $("conn").textContent = "Connected, but the backend replied with an error. Re-check the deployment."; }
   }catch(e){ $("conn").textContent = "Connected to the page, but couldn't read from the backend yet."; }
-  loadShows();
+  loadShows(); loadMaps();
 }
 
 /* ---------- shows list ---------- */
@@ -313,7 +426,7 @@ function openForm(id){
   fid("venue_en").value = s.venue_en||"";
   fid("venue_zh").value = s.venue_zh||"";
   fid("capacity").value = s.capacity||"";
-  fid("map_id").value = s.map_id||"";
+  populateMapPicker(); fid("map_id").value = s.map_id||"";
   fid("price_note_en").value = s.price_note_en||"";
   fid("price_note_zh").value = s.price_note_zh||"";
   fid("notes").value = s.notes||"";
@@ -371,6 +484,272 @@ $("deleteShow").onclick = async function(){
   }catch(e){ showGate($("fgate"),"Could not delete (network error).",false); }
   this.disabled=false;
 };
+
+/* ================= seat-map designer ================= */
+var MAPS = [];
+var MAP = null;      // map currently open in the designer
+var FLOOR = 0;       // active floor index
+var TOOL = "seat";
+var SECTION = 0;     // active section index
+var painting = false;
+var mapEditId = null;
+var SEC_COLORS = ["#B8893C","#C8402E","#3E7A5E","#4A6FA5","#8A5A9E","#B0752F","#6D6459","#2F6B34","#9A3A2F","#557A46"];
+
+/* ---- model ---- */
+function emptyCells(rows, cols){ var g=[]; for(var r=0;r<rows;r++){ var row=[]; for(var c=0;c<cols;c++) row.push({t:"empty"}); g.push(row); } return g; }
+function newFloor(name){ return { name:name||"Main", rows:12, cols:20, cells:emptyCells(12,20), labelFrom:"bottom" }; }
+function newMapModel(){ return { id:"", name:"", sections:[{name:"Stalls",color:SEC_COLORS[0]}], floors:[newFloor("Main")] }; }
+
+/* ---- compact serialize / deserialize ---- */
+function encCell(cell){
+  if(!cell || cell.t==="empty") return ".";
+  if(cell.t==="blocked") return "x";
+  var s=Math.min(cell.sec||0,9);
+  return cell.wc ? String.fromCharCode(97+s) : String(s);
+}
+function decCell(ch){
+  if(ch==="x") return {t:"blocked"};
+  if(ch>="0"&&ch<="9") return {t:"seat",sec:+ch,wc:false};
+  var code=ch.charCodeAt(0);
+  if(code>=97&&code<=106) return {t:"seat",sec:code-97,wc:true};
+  return {t:"empty"};
+}
+function serializeMap(m){
+  return {
+    id:m.id, name:m.name,
+    sections:m.sections.map(function(s){ return {name:s.name,color:s.color}; }),
+    floors:m.floors.map(function(f){
+      return { name:f.name, rows:f.rows, cols:f.cols, labelFrom:f.labelFrom||"bottom",
+        grid:f.cells.map(function(row){ return row.map(encCell).join(""); }) };
+    })
+  };
+}
+function deserializeMap(raw){
+  raw=raw||{};
+  var sections=(raw.sections&&raw.sections.length)?raw.sections.map(function(s){return {name:s.name,color:s.color};}):[{name:"Stalls",color:SEC_COLORS[0]}];
+  var floors=(raw.floors&&raw.floors.length)?raw.floors.map(function(f){
+    var rows=f.rows||(f.grid?f.grid.length:12), cols=f.cols||(f.grid&&f.grid[0]?f.grid[0].length:20);
+    var cells=[];
+    for(var r=0;r<rows;r++){
+      var line=(f.grid&&f.grid[r])||"";
+      var row=[];
+      for(var c=0;c<cols;c++) row.push(decCell(line.charAt(c)||"."));
+      cells.push(row);
+    }
+    return { name:f.name||"Main", rows:rows, cols:cols, cells:cells, labelFrom:f.labelFrom||"bottom" };
+  }):[newFloor("Main")];
+  return { id:raw.id||"", name:raw.name||"", sections:sections, floors:floors };
+}
+
+/* ---- seat numbering ---- */
+function colLetter(i){ var s=""; i++; while(i>0){ var m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; }
+function numberFloor(floor){
+  var seatRows=[];
+  for(var r=0;r<floor.rows;r++){ if(floor.cells[r].some(function(c){return c.t==="seat";})) seatRows.push(r); }
+  var order=(floor.labelFrom==="top")?seatRows.slice():seatRows.slice().reverse();
+  var rowLabel={};
+  order.forEach(function(r,i){ rowLabel[r]=colLetter(i); });
+  var ids={};
+  for(var r2=0;r2<floor.rows;r2++){
+    if(rowLabel[r2]===undefined) continue;
+    var n=0;
+    for(var c=0;c<floor.cols;c++){ if(floor.cells[r2][c].t==="seat"){ n++; ids[r2+","+c]=rowLabel[r2]+n; } }
+  }
+  return { ids:ids, rowLabel:rowLabel };
+}
+function countSeats(m){
+  var total=0, wc=0, bySec={};
+  m.floors.forEach(function(f){ f.cells.forEach(function(row){ row.forEach(function(c){
+    if(c.t==="seat"){ total++; if(c.wc) wc++; bySec[c.sec||0]=(bySec[c.sec||0]||0)+1; }
+  }); }); });
+  return { total:total, wc:wc, bySec:bySec };
+}
+
+/* ---- list ---- */
+async function loadMaps(){
+  try{ var res=await post({action:"maps",pass:AUTH.pass}); MAPS=(res&&res.ok&&res.maps)?res.maps.map(deserializeMap):[]; }
+  catch(e){ MAPS=[]; }
+  renderMapList(); populateMapPicker();
+}
+function renderMapList(){
+  var host=$("mapList");
+  if(!MAPS.length){ host.innerHTML='<div class="empty">No seat maps yet. Tap <b>+ New map</b> to lay out your first venue.</div>'; return; }
+  host.innerHTML=MAPS.map(function(m){
+    var ct=countSeats(m);
+    var meta=m.floors.length+" floor"+(m.floors.length>1?"s":"")+" · "+ct.total+" seats"+(ct.wc?(" · "+ct.wc+" wheelchair"):"")+" · "+m.sections.length+" section"+(m.sections.length>1?"s":"");
+    return '<div class="show"><div class="m"><h3>'+esc(m.name||m.id)+'</h3><div class="meta">'+esc(meta)+'</div></div>'
+      + '<div class="acts"><button class="btn sm" data-emap="'+esc(m.id)+'">Open</button></div></div>';
+  }).join("");
+  Array.prototype.forEach.call(host.querySelectorAll("[data-emap]"),function(b){ b.onclick=function(){ openMap(b.getAttribute("data-emap")); }; });
+}
+
+/* ---- open / switch views ---- */
+function showMapsArea(on){ $("mapsArea").classList.toggle("hidden",!on); $("showsArea").classList.toggle("hidden",on); }
+function showDesigner(on){ $("mapDesigner").classList.toggle("hidden",!on); $("mapsListView").classList.toggle("hidden",on); if(on) window.scrollTo(0,0); }
+
+function openMap(id){
+  mapEditId=id;
+  if(id){ var found=MAPS.filter(function(x){return x.id===id;})[0]; MAP=found?JSON.parse(JSON.stringify(found)):newMapModel(); }
+  else { MAP=newMapModel(); }
+  FLOOR=0; SECTION=0; TOOL="seat";
+  $("m_name").value=MAP.name||"";
+  $("m_idhint").textContent=id?("Map ID: "+id+" (fixed)"):"A new map ID will be made from the venue name.";
+  $("deleteMap").style.display=id?"":"none";
+  $("mgate").classList.add("hidden");
+  setTool("seat");
+  renderFloorTabs(); renderSections(); renderGrid(); renderStats();
+  showDesigner(true);
+}
+
+/* ---- floors ---- */
+function renderFloorTabs(){
+  var host=$("floorTabs");
+  host.innerHTML=MAP.floors.map(function(f,i){ return '<button class="ft'+(i===FLOOR?" on":"")+'" data-floor="'+i+'">'+esc(f.name||("Floor "+(i+1)))+'</button>'; }).join("")
+    + '<button class="ficon" id="renameFloor" title="Rename this floor">Rename</button>'
+    + '<button class="ficon" id="addFloor">+ Floor</button>'
+    + (MAP.floors.length>1?'<button class="ficon" id="delFloor" title="Delete this floor">Delete floor</button>':'');
+  Array.prototype.forEach.call(host.querySelectorAll("[data-floor]"),function(b){ b.onclick=function(){ FLOOR=+b.getAttribute("data-floor"); renderFloorTabs(); renderGrid(); renderStats(); }; });
+  $("addFloor").onclick=function(){ MAP.floors.push(newFloor("Floor "+(MAP.floors.length+1))); FLOOR=MAP.floors.length-1; renderFloorTabs(); renderGrid(); renderStats(); };
+  $("renameFloor").onclick=function(){ var n=prompt("Floor name:",MAP.floors[FLOOR].name); if(n!=null){ MAP.floors[FLOOR].name=n.trim()||MAP.floors[FLOOR].name; renderFloorTabs(); } };
+  if($("delFloor")) $("delFloor").onclick=function(){ if(!confirm("Delete this floor and its seats?")) return; MAP.floors.splice(FLOOR,1); FLOOR=0; renderFloorTabs(); renderGrid(); renderStats(); };
+}
+
+/* ---- sections ---- */
+function renderSections(){
+  var host=$("sectionChips");
+  host.innerHTML=MAP.sections.map(function(s,i){
+    return '<span class="chip'+(i===SECTION?" on":"")+'" data-sec="'+i+'"><span class="sw" style="background:'+esc(s.color)+'"></span>'+esc(s.name)+'<button class="x" data-editsec="'+i+'" title="Edit"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span>';
+  }).join("");
+  Array.prototype.forEach.call(host.querySelectorAll("[data-sec]"),function(b){ b.onclick=function(e){ if(e.target.hasAttribute("data-editsec")) return; SECTION=+b.getAttribute("data-sec"); renderSections(); }; });
+  Array.prototype.forEach.call(host.querySelectorAll("[data-editsec]"),function(b){ b.onclick=function(ev){ ev.stopPropagation(); editSection(+b.getAttribute("data-editsec")); }; });
+}
+$("addSection").onclick=function(){
+  var name=prompt("New section name (e.g. VIP, Stalls, Circle):",""); if(name==null||!name.trim()) return;
+  var color=SEC_COLORS[MAP.sections.length%SEC_COLORS.length];
+  MAP.sections.push({name:name.trim(),color:color}); SECTION=MAP.sections.length-1; renderSections();
+};
+function editSection(i){
+  var s=MAP.sections[i];
+  var name=prompt("Section name:",s.name); if(name==null) return;
+  if(!name.trim()){ if(MAP.sections.length<=1){ alert("Keep at least one section."); return; } if(!confirm("Delete this section? Seats in it become plain seats in section 1.")) return; MAP.sections.splice(i,1); MAP.floors.forEach(function(f){ f.cells.forEach(function(row){ row.forEach(function(c){ if(c.t==="seat"){ if(c.sec===i) c.sec=0; else if(c.sec>i) c.sec--; } }); }); }); SECTION=0; renderSections(); renderGrid(); renderStats(); return; }
+  s.name=name.trim();
+  var col=prompt("Section colour (hex, e.g. #B8893C):",s.color); if(col&&/^#?[0-9a-fA-F]{6}$/.test(col.trim())){ s.color=col.trim().charAt(0)==="#"?col.trim():("#"+col.trim()); }
+  renderSections(); renderGrid();
+}
+
+/* ---- tools ---- */
+function setTool(t){ TOOL=t; Array.prototype.forEach.call($("toolGroup").querySelectorAll("[data-tool]"),function(b){ b.classList.toggle("on",b.getAttribute("data-tool")===t); }); }
+Array.prototype.forEach.call($("toolGroup").querySelectorAll("[data-tool]"),function(b){ b.onclick=function(){ setTool(b.getAttribute("data-tool")); }; });
+
+/* ---- grid ---- */
+function renderGrid(){
+  var f=MAP.floors[FLOOR];
+  var num=numberFloor(f);
+  var host=$("seatGrid");
+  host.style.gridTemplateColumns="20px repeat("+f.cols+",22px)";
+  var html="";
+  for(var r=0;r<f.rows;r++){
+    html+='<div class="rowlab">'+(num.rowLabel[r]||"")+'</div>';
+    for(var c=0;c<f.cols;c++){
+      var cell=f.cells[r][c];
+      var cls="scell "+cell.t+(cell.wc?" wc":"");
+      var style="";
+      if(cell.t==="seat"){ var col=(MAP.sections[cell.sec]&&MAP.sections[cell.sec].color)||"#B8893C"; style=' style="background:'+col+'"'; }
+      html+='<div class="'+cls+'" data-r="'+r+'" data-c="'+c+'"'+style+'></div>';
+    }
+  }
+  host.innerHTML=html;
+}
+function applyCell(r,c){
+  var cell=MAP.floors[FLOOR].cells[r][c];
+  if(TOOL==="empty") MAP.floors[FLOOR].cells[r][c]={t:"empty"};
+  else if(TOOL==="blocked") MAP.floors[FLOOR].cells[r][c]={t:"blocked"};
+  else if(TOOL==="seat") MAP.floors[FLOOR].cells[r][c]={t:"seat",sec:SECTION,wc:false};
+  else if(TOOL==="wheelchair") MAP.floors[FLOOR].cells[r][c]={t:"seat",sec:SECTION,wc:true};
+  // repaint just this cell for speed
+  paintCellEl(r,c);
+}
+function paintCellEl(r,c){
+  var el=$("seatGrid").querySelector('[data-r="'+r+'"][data-c="'+c+'"]'); if(!el) return;
+  var cell=MAP.floors[FLOOR].cells[r][c];
+  el.className="scell "+cell.t+(cell.wc?" wc":"");
+  el.style.background=(cell.t==="seat")?(((MAP.sections[cell.sec]&&MAP.sections[cell.sec].color)||"#B8893C")):"";
+}
+(function bindPaint(){
+  var g=$("seatGrid");
+  function cellFrom(t){ if(t&&t.classList&&t.classList.contains("scell")) return t; return null; }
+  g.addEventListener("pointerdown",function(e){ var el=cellFrom(e.target); if(!el) return; painting=true; applyCell(+el.getAttribute("data-r"),+el.getAttribute("data-c")); });
+  g.addEventListener("pointermove",function(e){ if(!painting||e.pointerType!=="mouse") return; var t=document.elementFromPoint(e.clientX,e.clientY); var el=cellFrom(t); if(el) applyCell(+el.getAttribute("data-r"),+el.getAttribute("data-c")); });
+  window.addEventListener("pointerup",function(){ if(painting){ painting=false; renderStats(); renderGrid(); } });
+})();
+
+/* ---- size ---- */
+$("applySize").onclick=function(){
+  var f=MAP.floors[FLOOR];
+  var nr=Math.max(1,Math.min(60,parseInt($("m_rows").value,10)||f.rows));
+  var nc=Math.max(1,Math.min(80,parseInt($("m_cols").value,10)||f.cols));
+  var ng=[];
+  for(var r=0;r<nr;r++){ var row=[]; for(var c=0;c<nc;c++){ row.push((f.cells[r]&&f.cells[r][c])?f.cells[r][c]:{t:"empty"}); } ng.push(row); }
+  f.rows=nr; f.cols=nc; f.cells=ng; renderGrid(); renderStats();
+};
+$("m_labelfrom").onchange=function(){ MAP.floors[FLOOR].labelFrom=this.value; renderGrid(); };
+
+/* ---- stats ---- */
+function renderStats(){
+  var ct=countSeats(MAP);
+  var legend=MAP.sections.map(function(s,i){ return '<span class="leg"><span class="sw" style="background:'+esc(s.color)+'"></span>'+esc(s.name)+' ('+(ct.bySec[i]||0)+')</span>'; }).join("");
+  $("mapStats").innerHTML='<b>'+ct.total+'</b> seats total'+(ct.wc?(' · <b>'+ct.wc+'</b> wheelchair'):'')+'<br>'+legend
+    +'<br><span style="color:var(--ink-55)">Tip: drag with a mouse to paint quickly; on touch, tap seats one by one. Row letters are auto-assigned; you set section prices on each show.</span>';
+  // sync size inputs to active floor
+  $("m_rows").value=MAP.floors[FLOOR].rows; $("m_cols").value=MAP.floors[FLOOR].cols; $("m_labelfrom").value=MAP.floors[FLOOR].labelFrom||"bottom";
+}
+
+/* ---- save / delete ---- */
+function slug(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40); }
+async function saveMapNow(){
+  MAP.name=$("m_name").value.trim();
+  if(!MAP.name){ showGate($("mgate"),"Please name the venue.",false); return; }
+  if(!MAP.id) MAP.id=mapEditId||slug(MAP.name)||("map-"+Date.now());
+  if(countSeats(MAP).total===0){ showGate($("mgate"),"Add at least one seat before saving.",false); return; }
+  var payload=serializeMap(MAP);
+  showGate($("mgate"),"Saving…",true);
+  try{
+    var res=await post({action:"saveMap",pass:AUTH.pass,map:payload});
+    if(res&&res.ok){ mapEditId=MAP.id; showGate($("mgate"),"Saved.",true); await loadMaps(); setTimeout(function(){ showDesigner(false); },500); }
+    else showGate($("mgate"),"Could not save: "+((res&&res.error)||"unknown"),false);
+  }catch(e){ showGate($("mgate"),"Could not save (network).",false); }
+}
+async function deleteMapNow(){
+  if(!mapEditId) return;
+  if(!confirm("Delete this seat map? Shows using it will need a new map.")) return;
+  try{ var res=await post({action:"deleteMap",pass:AUTH.pass,id:mapEditId}); if(res&&res.ok){ await loadMaps(); showDesigner(false); } else showGate($("mgate"),"Could not delete: "+((res&&res.error)||"unknown"),false); }
+  catch(e){ showGate($("mgate"),"Could not delete (network).",false); }
+}
+
+/* ---- wire designer buttons + nav ---- */
+$("newMap").onclick=function(){ openMap(null); };
+$("mapBack").onclick=function(){ showDesigner(false); };
+$("mapBack2").onclick=function(){ showDesigner(false); };
+$("saveMap").onclick=saveMapNow;
+$("saveMap2").onclick=saveMapNow;
+$("deleteMap").onclick=deleteMapNow;
+Array.prototype.forEach.call($("secnav").querySelectorAll("[data-sec]"),function(b){
+  b.onclick=function(){
+    Array.prototype.forEach.call($("secnav").querySelectorAll("[data-sec]"),function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    var sec=b.getAttribute("data-sec");
+    showMapsArea(sec==="maps");
+    if(sec==="maps" && !MAPS.length) loadMaps();
+  };
+});
+
+/* ---- show-form map picker ---- */
+function populateMapPicker(){
+  var sel=$("f_map_id"); if(!sel||sel.tagName!=="SELECT") return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— none / general admission —</option>'+MAPS.map(function(m){ return '<option value="'+esc(m.id)+'">'+esc(m.name||m.id)+'</option>'; }).join("");
+  sel.value=cur;
+}
 
 /* ---------- resume session ---------- */
 (function(){
