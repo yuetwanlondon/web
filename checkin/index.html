@@ -18,20 +18,22 @@ button{font-family:inherit;cursor:pointer}
 .top img{height:24px;filter:brightness(0) invert(1)}
 .top .t{font-weight:800;font-size:15px}
 .top .t small{font-weight:600;opacity:.7;margin-left:4px}
-.wrap{max-width:520px;margin:0 auto;padding:20px 16px 60px}
+.top .cam{margin-left:auto;background:transparent;color:var(--paper);border:1px solid rgba(244,236,221,.28);border-radius:30px;padding:5px 12px;font-size:12px;font-weight:600}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 60px}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}
 h1{font-size:20px;margin:0 0 4px}
-.sub{color:#6d655c;font-size:14px;margin-bottom:14px}
+.sub{color:#6d655c;font-size:14px}
 .in{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:16px;font-family:inherit}
 .in:focus{outline:none;border-color:var(--brass)}
 .btn{border:1px solid var(--brass);background:#fff;color:#6d563a;border-radius:30px;padding:13px 20px;font-size:15px;font-weight:600;width:100%}
 .btn.dark{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .btn.green{background:var(--green);border-color:var(--green);color:#fff}
 .btn.ghost{border-color:var(--line);color:#6d655c}
-.gate{margin-top:12px;background:var(--red-bg);border:1px solid rgba(168,51,31,.3);color:var(--red);border-radius:10px;padding:11px 14px;font-size:13.5px}
-#reader{width:100%;border-radius:14px;overflow:hidden;margin-bottom:12px;background:#000;min-height:60px}
-.or{text-align:center;color:#9a9186;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:14px 0}
-.row{display:flex;gap:8px}.row .in{flex:1}.row .btn{width:auto;white-space:nowrap}
+#reader{width:100%;border-radius:16px;overflow:hidden;background:#000;min-height:180px;margin-bottom:8px}
+.camnote{text-align:center;font-size:12.5px;color:#8a8175;margin-bottom:14px}
+.camnote b{color:var(--green)}
+.manual{display:flex;gap:8px;margin-top:14px}.manual .in{flex:1}.manual .btn{width:auto;white-space:nowrap}
+.hint{color:#9a9186;font-size:12px;margin-top:8px;text-align:center}
 .review{border-radius:16px;padding:20px;border:2px solid var(--line);background:#fff;margin-bottom:14px;text-align:center}
 .review .pay{font-size:26px;font-weight:800;margin:0 0 2px}
 .review.g{border-color:var(--green)}.review.g .pay{color:var(--green)}
@@ -40,15 +42,15 @@ h1{font-size:20px;margin:0 0 4px}
 .review .det{font-size:15px;color:#4a423a}
 .review .seatline{font-size:17px;font-weight:700;background:#f3ece0;border-radius:10px;padding:9px;margin:12px 0}
 .warn{background:#fff4d6;border:1px solid rgba(169,114,26,.4);color:#8a6410;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;margin-bottom:12px;text-align:center}
-.result{border-radius:16px;padding:26px 20px;text-align:center;margin-bottom:14px;border:2px solid}
-.result .status{font-size:30px;font-weight:800;margin:0 0 4px}
+.result{border-radius:16px;padding:24px 20px;text-align:center;margin-bottom:14px;border:2px solid}
+.result .status{font-size:28px;font-weight:800;margin:0 0 4px}
 .result.g{background:var(--green-bg);color:var(--green);border-color:var(--green)}
 .result.r{background:var(--red-bg);color:var(--red);border-color:var(--red)}
 .acts{display:flex;gap:9px}.acts .btn{flex:1}
 </style>
 </head>
 <body>
-<div class="top"><img src="/img/yuetwanlondon-icon.svg" alt=""><div class="t">Yuet Wan London<small>Check-in</small></div></div>
+<div class="top"><img src="/img/yuetwanlondon-icon.svg" alt=""><div class="t">Yuet Wan London<small>Check-in</small></div><button class="cam hidden" id="camToggle">Camera</button></div>
 <div class="wrap">
 
   <div id="blocked" class="card hidden">
@@ -57,14 +59,14 @@ h1{font-size:20px;margin:0 0 4px}
   </div>
 
   <div id="scan" class="hidden">
+    <div id="reader"></div>
+    <div class="camnote" id="camNote">Starting camera…</div>
+    <div class="camnote" id="rosterNote" style="margin-top:-8px"></div>
     <div id="stage"></div>
-    <div class="card" id="scanCard">
-      <h1>Scan a ticket</h1>
-      <div class="sub">Point the camera at the QR on the guest's ticket, or type their reference.</div>
-      <div id="reader"></div>
-      <button class="btn" id="camToggle">Start camera</button>
-      <div class="or">or enter reference</div>
-      <div class="row"><input class="in" id="manual" placeholder="YW260901-XXXX" autocapitalize="characters"><button class="btn dark" id="lookupBtn">Find</button></div>
+    <div class="card">
+      <div class="sub" style="margin-bottom:8px">Scan with the camera or a handheld scanner, or type a reference.</div>
+      <div class="manual"><input class="in" id="manual" placeholder="Scan or type reference…" autocapitalize="characters" autocomplete="off"><button class="btn dark" id="lookupBtn">Find</button></div>
+      <div class="hint">A USB/Bluetooth QR scanner works here too — just scan into this page.</div>
     </div>
   </div>
 
@@ -76,36 +78,87 @@ function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 async function post(p){const r=await fetch(BOOK_API,{method:"POST",body:JSON.stringify(p)});return r.json();}
 var KEY=new URLSearchParams(location.search).get("key")||"";
-var scanner=null,camOn=false,busy=false,CUR=null;
+var scanner=null,camOn=false,CUR=null,inFlight=false,lastScan={code:"",t:0};
+var isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 
-if(!KEY){ $("blocked").classList.remove("hidden"); } else { $("scan").classList.remove("hidden"); }
+if(!KEY){ $("blocked").classList.remove("hidden"); }
+else { $("scan").classList.remove("hidden"); $("camToggle").classList.remove("hidden"); startCam(); focusManual(); loadRoster(); setInterval(loadRoster, 60000); }
 
+/* preload the guest list so scans resolve instantly on the device */
+var R_BY_ID={}, R_BY_TOK={}, SHOW_FILTER=new URLSearchParams(location.search).get("show")||"";
+async function loadRoster(){
+  try{
+    var res=await post({action:"roster", key:KEY, show:SHOW_FILTER});
+    if(res&&res.ok&&res.roster){
+      var byId={}, byTok={};
+      res.roster.forEach(function(t){ byId[t.id]=t; if(t.token) byTok[String(t.token)]=t; });
+      R_BY_ID=byId; R_BY_TOK=byTok;
+      $("rosterNote").innerHTML=res.roster.length+" ticket(s) loaded · scans are instant";
+    }
+  }catch(e){}
+}
+
+function focusManual(){ if(!isTouch){ try{ $("manual").focus(); }catch(e){} } }
+
+/* camera — auto-starts and stays on (kiosk) */
 $("camToggle").onclick=function(){ camOn?stopCam():startCam(); };
 function startCam(){
-  if(typeof Html5Qrcode==="undefined"){ $("camToggle").textContent="Camera unavailable — type reference"; return; }
+  if(typeof Html5Qrcode==="undefined"){ $("camNote").textContent="Camera unavailable — use a handheld scanner or type the reference."; $("camToggle").classList.add("hidden"); return; }
   scanner=new Html5Qrcode("reader");
-  scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:240,height:240}},onDecode,function(){})
-    .then(function(){camOn=true;$("camToggle").textContent="Stop camera";})
-    .catch(function(){$("camToggle").textContent="Can't open camera — type reference";});
+  scanner.start({facingMode:"environment"},{fps:12,qrbox:{width:250,height:250}},onDecode,function(){})
+    .then(function(){ camOn=true; $("camToggle").textContent="Camera on"; $("camNote").innerHTML="<b>Camera ready</b> — hold a QR up to scan"; })
+    .catch(function(){ $("camNote").textContent="Couldn't open the camera — use a handheld scanner or type the reference."; $("camToggle").textContent="Retry camera"; });
 }
-function stopCam(){ if(scanner&&camOn){ scanner.stop().then(function(){camOn=false;$("camToggle").textContent="Start camera";try{scanner.clear();}catch(e){}}).catch(function(){}); } }
-function onDecode(text){ if(busy)return; busy=true; stopCam(); var p=parseTicket(text); lookup(p.id,p.token); }
+function stopCam(){ if(scanner&&camOn){ scanner.stop().then(function(){ camOn=false; $("camToggle").textContent="Start camera"; $("camNote").textContent="Camera off"; }).catch(function(){}); } }
+function onDecode(text){ var p=parseTicket(text); handleScan(p.id,p.token); }
+
 function parseTicket(text){ text=String(text||"").trim();
   if(text.indexOf("b=")>-1){ try{ var qs=text.substring(text.indexOf("?")+1); var pr=new URLSearchParams(qs); if(pr.get("b")) return {id:pr.get("b"),token:pr.get("t")||""}; }catch(e){} }
   return {id:text,token:""};
 }
-$("manual").addEventListener("keydown",function(e){ if(e.key==="Enter") $("lookupBtn").click(); });
-$("lookupBtn").onclick=function(){ var v=$("manual").value.trim(); if(!v)return; busy=true; lookup(v,""); };
+/* debounce: ignore the same code within 4s; a different code advances immediately */
+function handleScan(id,token){
+  if(!id) return;
+  var now=Date.now();
+  if(id===lastScan.code && now-lastScan.t<4000) return;
+  lastScan={code:id,t:now};
+  var local = (token && R_BY_TOK[String(token)]) || R_BY_ID[id];
+  if(local){ CUR={id:local.id, token:local.token||token}; renderReviewLocal(local, !!token); }
+  else { lookup(id,token); }   /* not in the snapshot yet — check the server */
+}
+function renderReviewLocal(t, tokenChecked){
+  var pt=payText(t.pay_status);
+  var warn=t.checked_in?'<div class="warn">Already checked in</div>':'';
+  var btn=t.checked_in
+    ? '<button class="btn ghost" id="nextBtn">Next guest</button>'
+    : '<div class="acts"><button class="btn green" id="doCheckin">Check in \u2713</button><button class="btn ghost" id="cancelBtn">Skip</button></div>';
+  $("stage").innerHTML=warn
+    +'<div class="review '+pt.c+'">'
+    +'<div class="pay">'+pt.t+'</div>'
+    +'<div class="who">'+esc(t.name)+'</div>'
+    +'<div class="det">'+esc(t.show_title||"")+'</div>'
+    +'<div class="seatline">'+esc(t.count)+' seat(s) \u00b7 '+esc(t.seats)+'</div>'
+    +'<div class="det">Ref '+esc(t.id)+'</div>'
+    +'</div>'+btn;
+  if($("doCheckin")) $("doCheckin").onclick=confirmCheckin;
+  if($("cancelBtn")) $("cancelBtn").onclick=reset;
+  if($("nextBtn")) $("nextBtn").onclick=reset;
+}
 
+$("manual").addEventListener("keydown",function(e){ if(e.key==="Enter"){ var v=$("manual").value.trim(); if(v){ var p=parseTicket(v); $("manual").value=""; handleScan(p.id,p.token); } } });
+$("lookupBtn").onclick=function(){ var v=$("manual").value.trim(); if(!v)return; var p=parseTicket(v); $("manual").value=""; handleScan(p.id,p.token); };
+
+/* lookup -> review (does NOT check in) */
 async function lookup(id,token){
-  $("scanCard").classList.add("hidden");
+  inFlight=true;
   $("stage").innerHTML='<div class="review a"><div class="pay">Finding…</div></div>';
   try{
     var res=await post({action:"ticketLookup",key:KEY,id:id,token:token});
+    inFlight=false;
     if(!res||!res.ok){ showError(res); return; }
     CUR={id:res.booking.id,token:token};
     renderReview(res);
-  }catch(e){ showError({error:"Network error — try again."}); }
+  }catch(e){ inFlight=false; showError({error:"Network error — try again."}); }
 }
 function payText(p){ p=String(p||"").toLowerCase(); if(p==="paid")return{t:"PAID",c:"g"}; if(p==="pay_on_day")return{t:"PAY ON DAY",c:"a"}; return{t:"COLLECT PAYMENT",c:"a"}; }
 function renderReview(res){
@@ -114,7 +167,7 @@ function renderReview(res){
   var warn=res.already?'<div class="warn">Already checked in'+(b.checkin_at?(" at "+esc(b.checkin_at)):"")+'</div>':'';
   var btn=res.already
     ? '<button class="btn ghost" id="nextBtn">Next guest</button>'
-    : '<div class="acts"><button class="btn green" id="doCheckin">Check in \u2713</button><button class="btn ghost" id="cancelBtn">Cancel</button></div>';
+    : '<div class="acts"><button class="btn green" id="doCheckin">Check in \u2713</button><button class="btn ghost" id="cancelBtn">Skip</button></div>';
   $("stage").innerHTML=warn
     +'<div class="review '+pt.c+'">'
     +'<div class="pay">'+pt.t+'</div>'
@@ -132,9 +185,10 @@ async function confirmCheckin(){
   try{
     var res=await post({action:"checkin",key:KEY,id:CUR.id,token:CUR.token});
     if(res&&res.ok){
-      var b=res.booking;
+      var b=res.booking; try{ if(navigator.vibrate) navigator.vibrate(90); }catch(e){}
+      if(R_BY_ID[b.id]) R_BY_ID[b.id].checked_in=true;
       $("stage").innerHTML='<div class="result g"><div class="status">CHECKED IN \u2713</div><div style="font-size:19px;font-weight:700;margin-top:6px">'+esc(b.name)+'</div><div class="det" style="margin-top:2px">'+esc(b.count)+' seat(s) · '+esc(b.seats)+'</div></div><button class="btn dark" id="nextBtn">Next guest</button>';
-      $("nextBtn").onclick=reset;
+      $("nextBtn").onclick=reset; focusManual();
     } else { showError(res); }
   }catch(e){ showError({error:"Network error — try again."}); }
 }
@@ -142,7 +196,7 @@ function showError(res){
   $("stage").innerHTML='<div class="result r"><div class="status">'+((res&&res.error&&res.error.indexOf("CANCEL")>-1)?"CANCELLED":"NOT FOUND")+'</div><div class="det" style="margin-top:6px">'+esc((res&&res.error)||"Unknown error")+'</div></div><button class="btn dark" id="nextBtn">Try again</button>';
   $("nextBtn").onclick=reset;
 }
-function reset(){ $("stage").innerHTML=""; $("scanCard").classList.remove("hidden"); $("manual").value=""; busy=false; CUR=null; }
+function reset(){ $("stage").innerHTML=""; CUR=null; lastScan={code:"",t:0}; focusManual(); }
 </script>
 </body>
 </html>
