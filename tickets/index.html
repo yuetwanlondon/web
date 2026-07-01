@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My tickets · Yuet Wan London 倫敦粵韻曲藝文化協會</title>
+<link rel="icon" type="image/png" href="/img/yuetwanlondon-favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@500;700;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+:root{--ink:#16130F;--ink-70:#4a423a;--ink-55:#6d655c;--paper:#F4ECDD;--mist:#F6F3EE;--brass:#B8893C;--brass-d:#8a6410;
+  --vermilion:#C8402E;--vermilion-d:#A8331F;--gold:#C9962E;--line:rgba(22,19,15,.13);--grot:"Plus Jakarta Sans",system-ui,sans-serif;--serif:"Playfair Display",Georgia,serif;--tc:"Noto Sans TC",var(--grot)}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--mist);color:var(--ink);font-family:var(--grot);line-height:1.5;-webkit-text-size-adjust:100%}
+.zh{font-family:var(--tc)}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--vermilion-d)}
+.hidden{display:none!important}
+.top{background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:space-between;padding:13px 18px}
+.top .lg{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px}
+.top .lg .dot{width:7px;height:7px;border-radius:50%;background:var(--vermilion)}
+.top .lang{background:transparent;color:var(--paper);border:1px solid rgba(244,236,221,.28);border-radius:30px;padding:6px 13px;font-size:12.5px;font-weight:600}
+.wrap{max-width:460px;margin:0 auto;padding:26px 16px 70px}
+
+/* login */
+.hero-h{text-align:center;margin:14px 0 22px}
+.hero-h .k{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--brass-d)}
+.hero-h h1{font-family:var(--serif);font-size:30px;font-weight:700;margin:8px 0 4px}
+.hero-h p{color:var(--ink-55);font-size:14.5px;margin:0}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 12px 34px rgba(22,19,15,.06)}
+label.f{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-55);margin:14px 0 6px}
+label.f:first-child{margin-top:0}
+.in{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
+.in:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(184,137,60,.14)}
+.btn{width:100%;border:none;background:var(--ink);color:var(--paper);border-radius:30px;padding:14px 20px;font-size:15.5px;font-weight:700;margin-top:18px}
+.btn:disabled{opacity:.5}
+.gate{margin-top:14px;background:rgba(200,64,46,.08);border:1px solid rgba(200,64,46,.22);color:#8a2c20;border-radius:11px;padding:11px 14px;font-size:13.5px}
+.privacy{color:var(--ink-55);font-size:12px;text-align:center;margin-top:16px;line-height:1.6}
+
+/* e-ticket */
+.tkhead{display:flex;align-items:center;justify-content:space-between;margin:2px 0 16px}
+.tkhead .h{font-family:var(--serif);font-size:22px;font-weight:700}
+.tkhead .so{background:transparent;border:1px solid var(--line);border-radius:30px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink-70)}
+.etk{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 12px 34px rgba(22,19,15,.08);margin-bottom:22px;position:relative}
+.ehero{height:150px;background-size:cover;background-position:center;position:relative;background-color:#2a2118}
+.ehero.ph{background:linear-gradient(135deg,#1c1712,#3a2e20);display:flex;align-items:center;justify-content:center}
+.ehero.ph::after{content:"YUET WAN LONDON";color:#c9a45e;font-size:11px;font-weight:700;letter-spacing:.2em}
+.echip{position:absolute;top:12px;left:12px;background:rgba(255,250,240,.94);color:var(--brass-d);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:4px 11px;border-radius:20px}
+.eseal{position:absolute;top:12px;right:12px;background:linear-gradient(135deg,#e7c063,#b8892f);color:#3a2c08;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:5px 12px;border-radius:20px;box-shadow:0 3px 10px rgba(140,100,16,.35)}
+.ebody{padding:20px 22px 22px;text-align:center}
+.etitle{font-family:var(--serif);font-size:22px;font-weight:700;line-height:1.15}
+.etitle small{display:block;font-family:var(--tc);font-size:14px;font-weight:500;color:var(--ink-55);margin-top:3px}
+.esub{color:var(--ink-55);font-size:12.5px;margin:6px 0 14px;letter-spacing:.02em}
+.esub.done{color:var(--brass-d);font-weight:600}
+.eqr{width:168px;height:168px;margin:0 auto;padding:10px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.eqr img{width:100%;height:100%;display:block}
+.eqr.dim{opacity:.4;filter:grayscale(1)}
+.eref{font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;letter-spacing:.05em;color:var(--ink-70);margin-top:9px}
+.ediv{height:1px;background:var(--line);margin:16px 0}
+.emeta{font-size:13.5px;color:var(--ink-70);line-height:1.9}
+.emeta .r{display:flex;align-items:center;justify-content:center;gap:7px}
+.emeta .ic{color:var(--brass);flex:none}
+.enamelbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-55);margin-top:12px}
+.ename{font-weight:700;font-size:16px}
+.eseat{display:inline-block;margin-top:10px;background:#f3ece0;border-radius:10px;padding:8px 14px;font-weight:700;font-size:14.5px}
+.epay{margin-top:10px;font-size:12px}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.badge.paid{background:#e2f0e0;color:#2f6b34}.badge.un{background:#f0e6e0;color:#8a5a2f}
+.dl{width:100%;margin-top:16px;border:1px solid var(--brass);background:#fff;color:var(--brass-d);border-radius:30px;padding:12px;font-size:14.5px;font-weight:600}
+.empty{text-align:center;color:var(--ink-55);padding:34px 18px;border:1.5px dashed var(--line);border-radius:16px;font-size:14.5px}
+.foot{max-width:460px;margin:0 auto;padding:8px 16px 24px;color:var(--ink-55);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="lg"><span class="dot"></span>Yuet Wan London</div>
+  <button class="lang" id="langBtn">中文</button>
+</div>
+<div class="wrap"><div id="view"></div></div>
+<div class="foot">Yuet Wan London · 倫敦粵韻曲藝文化協會</div>
+
+<script>
+const BOOK_API = "https://script.google.com/macros/s/AKfycbylfZEOHp8Zngus5S033z2qdARaZJJg8PaDd2dElqntQYIrn8IzFSE3N1jjfvYX3PNUTQ/exec";
+var LANG=(function(){ try{ return localStorage.getItem("yw_lang")==="zh"?"zh":"en"; }catch(e){ return "en"; } })();
+function L(en,zh){ return LANG==="zh"?zh:en; }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+async function post(p){ const r=await fetch(BOOK_API,{method:"POST",body:JSON.stringify(p)}); return r.json(); }
+var TICKETS=[];
+
+$("langBtn").onclick=function(){ LANG=LANG==="zh"?"en":"zh"; try{ localStorage.setItem("yw_lang",LANG); }catch(e){} render(); };
+
+function render(){
+  $("langBtn").textContent=LANG==="zh"?"EN":"中文";
+  if(TICKETS._loaded) return renderTickets();
+  return renderLogin();
+}
+
+/* ---- login ---- */
+function renderLogin(){
+  $("view").innerHTML=
+    '<div class="hero-h"><div class="k">Yuet Wan London</div><h1>'+L("Your tickets","我的門票")+'</h1><p>'+L("Enter the email and phone you booked with.","輸入您購票時使用的電郵及電話。")+'</p></div>'
+    +'<div class="card">'
+    +'<label class="f">'+L("Email","電郵")+'</label><input class="in" id="t_email" type="email" autocomplete="email" inputmode="email">'
+    +'<label class="f">'+L("Phone","電話")+'</label><input class="in" id="t_phone" type="tel" autocomplete="tel" inputmode="tel">'
+    +'<button class="btn" id="t_go">'+L("View my tickets","查看門票")+'</button>'
+    +'<div class="gate hidden" id="t_gate"></div>'
+    +'<div class="privacy">'+L("We match these to your booking. No password needed.","我們以此核對您的預訂，毋須密碼。")+'</div>'
+    +'</div>';
+  $("t_go").onclick=login;
+  $("t_phone").addEventListener("keydown",function(e){ if(e.key==="Enter") login(); });
+}
+async function login(){
+  var email=$("t_email").value.trim(), phone=$("t_phone").value.trim();
+  var g=$("t_gate");
+  if(email.indexOf("@")<1){ g.textContent=L("Please enter a valid email.","請輸入有效電郵。"); g.classList.remove("hidden"); return; }
+  if(phone.replace(/\D/g,"").length<6){ g.textContent=L("Please enter your phone number.","請輸入電話號碼。"); g.classList.remove("hidden"); return; }
+  var b=$("t_go"); b.disabled=true; b.textContent=L("Checking…","查詢中…");
+  try{
+    var res=await post({action:"myTickets", email:email, phone:phone});
+    if(res && res.ok){ TICKETS=res.tickets||[]; TICKETS._loaded=true; renderTickets(); }
+    else { g.textContent=(res&&res.error)||L("Something went wrong.","發生錯誤。"); g.classList.remove("hidden"); b.disabled=false; b.textContent=L("View my tickets","查看門票"); }
+  }catch(e){ g.textContent=L("Couldn't reach the booking service.","無法連接系統。"); g.classList.remove("hidden"); b.disabled=false; b.textContent=L("View my tickets","查看門票"); }
+}
+
+/* ---- ticket display ---- */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function isDone(t){ if(t.checked_in) return true; var d=t.show&&t.show.date; return !!(d && String(d) < todayStr()); }
+function qrDataFor(t){ return location.origin+"/checkin/?b="+encodeURIComponent(t.id)+"&t="+encodeURIComponent(t.token||""); }
+function qrImg(t){ return "https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data="+encodeURIComponent(qrDataFor(t)); }
+function pin(){ return '<svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'; }
+function cal(){ return '<svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>'; }
+
+function renderTickets(){
+  $("langBtn").textContent=LANG==="zh"?"EN":"中文";
+  var head='<div class="tkhead"><div class="h">'+L("My tickets","我的門票")+'</div><button class="so" id="signout">'+L("Sign out","登出")+'</button></div>';
+  if(!TICKETS.length){ $("view").innerHTML=head+'<div class="empty">'+L("No tickets found for those details. Check the email and phone you booked with, or contact us.","找不到相關門票，請核對電郵及電話，或與我們聯絡。")+'</div>'; $("signout").onclick=signout; return; }
+  $("view").innerHTML=head+TICKETS.map(ticketHtml).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-dl]"),function(btn){ btn.onclick=function(){ downloadTicket(TICKETS[+btn.getAttribute("data-dl")], btn); }; });
+  $("signout").onclick=signout;
+}
+function signout(){ TICKETS=[]; TICKETS._loaded=false; renderLogin(); }
+
+function ticketHtml(t,i){
+  var sh=t.show||{}, done=isDone(t);
+  var title=esc(L(sh.title_en||sh.title_zh, sh.title_zh||sh.title_en));
+  var zh=(sh.title_zh&&sh.title_en&&LANG!=="zh")?('<small>'+esc(sh.title_zh)+'</small>'):'';
+  var when=[sh.date,sh.time].filter(Boolean).join(" · ");
+  var venue=esc(L(sh.venue_en||sh.venue_zh, sh.venue_zh||sh.venue_en));
+  var heroStyle = sh.hero_image ? ' style="background-image:url(\''+esc(sh.hero_image)+'\')"' : '';
+  var heroCls = sh.hero_image ? 'ehero' : 'ehero ph';
+  var sealTxt = t.checked_in ? L("Attended","已入場") : L("Completed","已結束");
+  var subTxt = done ? (t.checked_in?L("Redeemed — thank you for coming","已入場 — 多謝蒞臨"):L("This show has taken place","此演出已結束")) : L("Show this ticket at the entrance","入場時出示此票");
+  var pay = String(t.pay_status||"").toLowerCase()==="paid" ? '<span class="badge paid">'+L("Paid","已付款")+'</span>' : '<span class="badge un">'+L("Payment on confirmation","確認後付款")+'</span>';
+  return '<div class="etk">'
+    +'<div class="'+heroCls+'"'+heroStyle+'>'+(sh.category?'<span class="echip">'+esc(sh.category)+'</span>':'')+(done?'<span class="eseal">'+sealTxt+'</span>':'')+'</div>'
+    +'<div class="ebody">'
+      +'<div class="etitle">'+title+zh+'</div>'
+      +'<div class="esub'+(done?' done':'')+'">'+subTxt+'</div>'
+      +'<div class="eqr'+(done?' dim':'')+'"><img src="'+qrImg(t)+'" alt="QR"></div>'
+      +'<div class="eref">'+esc(t.id)+'</div>'
+      +'<div class="ediv"></div>'
+      +'<div class="emeta">'+(venue?'<div class="r">'+pin()+'<span>'+venue+'</span></div>':'')+(when?'<div class="r">'+cal()+'<span>'+esc(when)+'</span></div>':'')+'</div>'
+      +'<div class="enamelbl">'+L("Name","姓名")+'</div><div class="ename">'+esc(t.name)+'</div>'
+      +'<div class="eseat">'+esc(t.count)+' '+L("seat(s)","座位")+' · '+esc(t.seats)+'</div>'
+      +'<div class="epay">'+pay+'</div>'
+      +'<button class="dl" data-dl="'+i+'">'+L("Download ticket","下載電子票")+'</button>'
+    +'</div></div>';
+}
+
+/* ---- download as image (locally-drawn QR so export isn't blocked) ---- */
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); }
+function roundTop(ctx,x,y,w,h,r){ ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h);ctx.closePath(); }
+function cover(ctx,img,x,y,w,h){ var ir=img.width/img.height, tr=w/h, sw,sh,sx,sy; if(ir>tr){ sh=img.height; sw=sh*tr; sx=(img.width-sw)/2; sy=0; } else { sw=img.width; sh=sw/tr; sx=0; sy=(img.height-sh)/2; } ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h); }
+function wrapText(ctx,text,cx,y,maxW,lh){ var words=String(text).split(" "),line="",lines=[]; for(var n=0;n<words.length;n++){ var test=line?line+" "+words[n]:words[n]; if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=words[n]; } else line=test; } lines.push(line); for(var i=0;i<lines.length;i++) ctx.fillText(lines[i],cx,y+i*lh); return lines.length*lh; }
+
+function downloadTicket(t,btn){
+  var old=btn.textContent; btn.textContent=L("Preparing…","準備中…"); btn.disabled=true;
+  buildTicketCanvas(t,true,function(canvas){
+    var url=null;
+    try{ url=canvas.toDataURL("image/png"); }catch(e){ url=null; }
+    if(url){ triggerDownload(url,t); btn.textContent=old; btn.disabled=false; return; }
+    // hero image tainted the canvas — rebuild without it
+    buildTicketCanvas(t,false,function(c2){ try{ triggerDownload(c2.toDataURL("image/png"),t); }catch(e2){ alert(L("Sorry, couldn't create the image.","抱歉，無法建立圖片。")); } btn.textContent=old; btn.disabled=false; });
+  });
+}
+function triggerDownload(url,t){ var a=document.createElement("a"); a.href=url; a.download="yuetwan-ticket-"+t.id+".png"; document.body.appendChild(a); a.click(); a.remove(); }
+
+function buildTicketCanvas(t,withHero,cb){
+  var sh=t.show||{}, done=isDone(t), s=2, w=380, h=600;
+  var canvas=document.createElement("canvas"); canvas.width=w*s; canvas.height=h*s;
+  var ctx=canvas.getContext("2d"); if(!ctx){ cb(canvas); return; } ctx.scale(s,s);
+  ctx.fillStyle="#f6f3ee"; ctx.fillRect(0,0,w,h);
+  ctx.save(); roundRect(ctx,10,10,w-20,h-20,20); ctx.fillStyle="#fff"; ctx.fill();
+  ctx.strokeStyle="rgba(22,19,15,.12)"; ctx.lineWidth=1; ctx.stroke(); ctx.restore();
+  var hx=10,hy=10,hw=w-20,hh=150;
+  function afterHero(){
+    // category chip
+    if(sh.category){ ctx.font="700 10px "+ "Plus Jakarta Sans, sans-serif"; var cw=ctx.measureText(sh.category.toUpperCase()).width+20; ctx.fillStyle="rgba(255,250,240,.94)"; roundRect(ctx,hx+10,hy+10,cw,20,10); ctx.fill(); ctx.fillStyle="#8a6410"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText(sh.category.toUpperCase(),hx+20,hy+20); }
+    ctx.textBaseline="alphabetic"; ctx.textAlign="center";
+    var y=hy+hh+34;
+    ctx.fillStyle="#16130f"; ctx.font="700 22px Georgia, serif";
+    y+=wrapText(ctx,L(sh.title_en||sh.title_zh,sh.title_zh||sh.title_en)||"",w/2,y,w-70,26)-26;
+    y+=26;
+    ctx.fillStyle=done?"#8a6410":"#8a7f6c"; ctx.font=(done?"600 ":"")+"11px Plus Jakarta Sans, sans-serif";
+    var sub=done?(t.checked_in?"Redeemed — thank you for coming":"This show has taken place"):"Show this ticket at the entrance";
+    ctx.fillText(sub,w/2,y); y+=20;
+    // QR (local)
+    var qs=140, qx=(w-qs)/2, qy=y;
+    try{ var qr=qrcode(0,'M'); qr.addData(qrDataFor(t)); qr.make(); var mc=qr.getModuleCount(), cell=qs/mc;
+      ctx.fillStyle=done?"#cfc7b8":"#16130f"; for(var r2=0;r2<mc;r2++) for(var c=0;c<mc;c++) if(qr.isDark(r2,c)) ctx.fillRect(qx+c*cell,qy+r2*cell,cell+.5,cell+.5);
+    }catch(e){}
+    y=qy+qs+22;
+    ctx.fillStyle="#4a423a"; ctx.font="12px monospace"; ctx.fillText(t.id,w/2,y); y+=20;
+    ctx.strokeStyle="rgba(22,19,15,.12)"; ctx.beginPath(); ctx.moveTo(36,y); ctx.lineTo(w-36,y); ctx.stroke(); y+=22;
+    ctx.fillStyle="#4a423a"; ctx.font="12.5px Plus Jakarta Sans, sans-serif";
+    var venue=sh.venue_en||sh.venue_zh; if(venue){ ctx.fillText(venue,w/2,y); y+=20; }
+    var when=[sh.date,sh.time].filter(Boolean).join("  \u00b7  "); if(when){ ctx.fillText(when,w/2,y); y+=20; }
+    y+=6; ctx.fillStyle="#9a8f7c"; ctx.font="700 9px Plus Jakarta Sans, sans-serif"; ctx.fillText("NAME",w/2,y); y+=17;
+    ctx.fillStyle="#16130f"; ctx.font="700 15px Plus Jakarta Sans, sans-serif"; ctx.fillText(t.name||"",w/2,y); y+=24;
+    // seat pill
+    var st=t.count+" seat(s) \u00b7 "+t.seats; ctx.font="700 13px Plus Jakarta Sans, sans-serif"; var pw=ctx.measureText(st).width+28;
+    ctx.fillStyle="#f3ece0"; roundRect(ctx,(w-pw)/2,y-14,pw,26,9); ctx.fill(); ctx.fillStyle="#16130f"; ctx.textBaseline="middle"; ctx.fillText(st,w/2,y); ctx.textBaseline="alphabetic";
+    // gold seal if done
+    if(done){ var seal=(t.checked_in?"ATTENDED":"COMPLETED"); ctx.font="800 10px Plus Jakarta Sans, sans-serif"; var sw2=ctx.measureText(seal).width+22; var g=ctx.createLinearGradient(0,0,sw2,0); g.addColorStop(0,"#e7c063"); g.addColorStop(1,"#b8892f"); ctx.fillStyle=g; roundRect(ctx,hx+hw-sw2-10,hy+10,sw2,20,10); ctx.fill(); ctx.fillStyle="#3a2c08"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(seal,hx+hw-10-sw2/2,hy+20); ctx.textBaseline="alphabetic"; }
+    cb(canvas);
+  }
+  function heroBlock(){ var g=ctx.createLinearGradient(hx,hy,hx+hw,hy+hh); g.addColorStop(0,"#1c1712"); g.addColorStop(1,"#3a2e20"); ctx.save(); roundTop(ctx,hx,hy,hw,hh,20); ctx.clip(); ctx.fillStyle=g; ctx.fillRect(hx,hy,hw,hh); ctx.fillStyle="#c9a45e"; ctx.font="700 11px Plus Jakarta Sans, sans-serif"; ctx.textAlign="center"; ctx.fillText("YUET WAN LONDON",hx+hw/2,hy+hh/2); ctx.restore(); }
+  if(withHero && sh.hero_image){
+    var img=new Image(); img.crossOrigin="anonymous";
+    img.onload=function(){ ctx.save(); roundTop(ctx,hx,hy,hw,hh,20); ctx.clip(); cover(ctx,img,hx,hy,hw,hh); ctx.restore(); afterHero(); };
+    img.onerror=function(){ heroBlock(); afterHero(); };
+    img.src=sh.hero_image;
+  } else { heroBlock(); afterHero(); }
+}
+
+/* boot */
+var q=new URLSearchParams(location.search);
+if(q.get("email")) { /* prefill only */ }
+renderLogin();
+$("langBtn").textContent=LANG==="zh"?"EN":"中文";
+</script>
+</body>
+</html>

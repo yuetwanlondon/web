@@ -267,7 +267,7 @@ function renderDetails(){
       + '<div class="seats" style="color:var(--ink-55);font-size:13.5px;margin-bottom:6px">'+seats.length+' '+L("seat(s)","座位")+': '+esc(seats.join(", "))+' · '+money(total())+' '+L("(indicative)","（參考價）")+'</div>'
       + '<label class="f">'+L("Full name","姓名")+'</label><input class="in" id="d_name" autocomplete="name">'
       + '<label class="f">'+L("Email","電郵")+'</label><input class="in" id="d_email" type="email" autocomplete="email">'
-      + '<label class="f">'+L("Phone (optional)","電話（可選）")+'</label><input class="in" id="d_phone" autocomplete="tel">'
+      + '<label class="f">'+L("Phone","電話")+'</label><input class="in" id="d_phone" autocomplete="tel">'
       + att
       + '<div class="note" style="margin-top:16px">'+L("This reserves your seats. We'll email or contact you to confirm and arrange payment — you don't pay online now.","此為預訂座位。我們會與您聯絡確認及安排付款，毋須即時網上付款。")+'</div>'
       + '<div class="gate hidden" id="dgate"></div>'
@@ -281,6 +281,7 @@ async function submitBooking(){
   var g=$("dgate");
   if(!name){ g.textContent=L("Please enter your name.","請輸入姓名。"); g.classList.remove("hidden"); return; }
   if(email.indexOf("@")<1){ g.textContent=L("Please enter a valid email.","請輸入有效電郵。"); g.classList.remove("hidden"); return; }
+  if(phone.replace(/\D/g,"").length<6){ g.textContent=L("Please enter a phone number.","請輸入電話號碼。"); g.classList.remove("hidden"); return; }
   var attendees=[];
   if(SHOW.name_per_seat==="yes"){ selectedList().forEach(function(sid){ var ni=document.querySelector('[data-aseat="'+cssq(sid)+'"]'); var ci=document.querySelector('[data-acat="'+cssq(sid)+'"]'); attendees.push({seat:sid,name:ni?ni.value.trim():"",cat:ci?ci.value:""}); }); }
   var btn=$("submitBk"); btn.disabled=true; btn.textContent=L("Reserving…","處理中…");
